@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "Donald Newholm <newholm1@hotmail.com> (https://github.com/CodeKrakken.git)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "ccxt": "^1.48.8",
+    "dotenv": "^8.2.0"
+  }
 }
