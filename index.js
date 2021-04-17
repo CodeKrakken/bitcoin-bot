@@ -1,14 +1,15 @@
-require('dotenv').config;
+require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
-
-const tick = async(config) => {
+console.log (ccxt.version)
+const tick = async(config, binanceClient) => {
   const { asset, base, spread, allocation } = config;
   const market = `${asset}/${base}`;
+  // const market = 'YOYOW/BTC'
 
   const orders = await binanceClient.fetchOpenOrders(market);
   orders.forEach(async order => {
-    await binanceClient.cancelOrder(order.id);
+    await binanceClient.cancelOrder(order.id, order.symbol);
   });
 
 
@@ -26,8 +27,8 @@ const tick = async(config) => {
   const sellVolume = assetBalance * allocation;
   const buyVolume = (baseBalance * allocation) / marketPrice;
 
-  await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice);
-  await binanceClient.createLimiteBuyOrder(market, buyVolume, buyPrice);
+  await binanceClient.createLimitSellOrder(marketPrice, sellVolume, sellPrice);
+  await binanceClient.createLimitBuyOrder(marketPrice, buyVolume, buyPrice);
 
   console.log(`
     New tick for ${market}...
