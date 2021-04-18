@@ -9,7 +9,7 @@ const tick = async (config, binanceClient) => {
   // Cancel open orders left from previou tick, if any
   const orders = await binanceClient.fetchOpenOrders(market);
   orders.forEach(async order => {
-    await binanceClient.cancelOrder(order.id);
+    await binanceClient.cancelOrder(order.id, 'BTC/USDT');
   });
 
   // Fetch current market prices
@@ -23,13 +23,12 @@ const tick = async (config, binanceClient) => {
   const sellPrice = marketPrice * (1 + spread);
   const buyPrice = marketPrice * (1 - spread);
   const balances = await binanceClient.fetchBalance();
-  const assetBalance = balances.free[asset] || 0; // e.g. 0.01 BTC
-  const baseBalance = balances.free[base] || 0; // e.g. 20 USDT
+  const assetBalance = balances.free[asset]; // e.g. 0.01 BTC
+  const baseBalance = balances.free[base]; // e.g. 20 USDT
   const sellVolume = assetBalance * allocation;
   const buyVolume = (baseBalance * allocation) / marketPrice;
 
   //Send orders
-  
   await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice);
   await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice);
 
