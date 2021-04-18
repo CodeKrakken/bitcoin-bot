@@ -28,6 +28,7 @@ const tick = async (config, binanceClient) => {
   const sellVolume = assetBalance * allocation;
   const buyVolume = (baseBalance * allocation) / marketPrice;
 
+  console.log(balances.free[base])
   //Send orders
   await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice);
   await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice);
@@ -43,7 +44,7 @@ const run = () => {
   const config = { 
     asset: "BTC",
     base: "USDT",
-    allocation: 0.1,     // Percentage of our available funds that we trade
+    allocation: 0.7,     // Percentage of our available funds that we trade
     spread: 0.2,         // Percentage above and below market prices for sell and buy orders 
     tickInterval: 2000  // Duration between each tick, in milliseconds
   };
