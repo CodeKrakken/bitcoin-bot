@@ -25,26 +25,21 @@ const tick = async (config, binanceClient) => {
   const balances = await binanceClient.fetchBalance();
   const assetBalance = balances.free[asset]; // e.g. 0.01 BTC
   const baseBalance = balances.free[base]; // e.g. 20 USDT
-  const sellVolume = assetBalance * allocation;
-  const buyVolume = (baseBalance * allocation) / marketPrice;
+  const volume = (baseBalance * allocation) / marketPrice;
+  const buyPrice = marketPrice - (marketPrice * spread);
   const sellPrice = buyPrice + (2 * spread);
 
   //Send orders
   console.log(`New tick for ${market}...`)
   console.log(`Market price: ${marketPrice}`)
 
-  if (buyVolume > 0.002) { 
-    const buyPrice = marketPrice - (marketPrice * spread);
-
-    console.log(`Creating limit buy order for ${buyVolume} BTC @ $${buyPrice}`)
-    await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice); 
-    console.log(`Created limit buy order for ${buyVolume} BTC @ $${buyPrice}`)
-  }
-
-  if (sellVolume > 0.002) {
-    console.log(`Creating limit sell order for ${sellVolume} BTC @ $${sellPrice}`)
-    await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice);
-    console.log(`Created limit sell order for ${sellVolume} BTC @ $${sellPrice}`)
+  if (orders.length === 0) { 
+    console.log(`Creating limit buy order for ${volume} BTC @ $${buyPrice}`)
+    await binanceClient.createLimitBuyOrder(market, volume, buyPrice); 
+    console.log(`Created limit buy order for ${volume} BTC @ $${buyPrice}`)
+    console.log(`Creating limit sell order for ${volume} BTC @ $${sellPrice}`)
+    await binanceClient.createLimitSellOrder(market, volume, sellPrice);
+    console.log(`Created limit sell order for ${volume} BTC @ $${sellPrice}`)
   }
 
 };
