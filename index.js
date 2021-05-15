@@ -33,7 +33,7 @@ const tick = async (config, binanceClient) => {
   console.log(`New tick for ${market}...`)
   console.log(`Market price: ${marketPrice}`)
 
-  if (baseBalance > 90) { 
+  if (orders.length === 0) { 
     console.log(`Creating limit buy order for ${volume} BTC @ $${buyPrice}`)
     await binanceClient.createLimitBuyOrder(market, volume, buyPrice); 
     console.log(`Created limit buy order for ${volume} BTC @ $${buyPrice}`)
@@ -55,9 +55,9 @@ const run = () => {
   const config = { 
     asset: "BTC",
     base: "BUSD",
-    allocation: 1,     // Percentage of our available funds that we trade
-    spread: 0.0004,         // Percentage above and below market prices for sell and buy orders 
-    tickInterval: 10000  // Duration between each tick, in milliseconds
+    allocation: 0.2,     // Percentage of our available funds that we trade
+    spread: 0.0001,         // Percentage above and below market prices for sell and buy orders 
+    tickInterval: 2000  // Duration between each tick, in milliseconds
   };
   const binanceClient = new ccxt.binance({
     apiKey: process.env.API_KEY,
