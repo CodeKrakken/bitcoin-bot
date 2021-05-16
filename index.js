@@ -19,14 +19,18 @@ async function run(client, config, lastPrice) {
   const market = `${config.asset}/${config.base}`
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
+  report(market, lastPrice, currentPrice, wallet)
+  // run(client, config, currentPrice)
+}
+
+function report(market, lastPrice, currentPrice, wallet) {
   console.log('')
   console.log('New Tick\n--------')
   console.log(`Market: ${market}`)
   console.log(`Last Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
   console.log(comparePrices(lastPrice, currentPrice))
-  console.log(`Wallet\nBUSD ${wallet.base}\nBTC ${wallet.asset}`)
-  run(client, config, currentPrice)
+  console.log(`\nWallet\nBUSD ${wallet.base}\nBTC ${wallet.asset}`)
 }
 
 function comparePrices(lastPrice, currentPrice) {
@@ -49,10 +53,9 @@ async function marketPrice(market) {
   const results = await Promise.all([
     axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${market}`)
   ]);
+  console.log(results)
   return results[0].data.price
 }
-
-
 
 async function newBuyOrder(market, volume, price) {
   console.log(`Creating limit buy order for ${volume} BTC @ $${price}`)
