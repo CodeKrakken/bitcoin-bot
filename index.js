@@ -10,6 +10,7 @@ const tick = async (config, binanceClient) => {
   const orders = await binanceClient.fetchOpenOrders(market);
   orders.forEach(async order => {
     if (order.side === 'buy') {
+      console.log("Cancelling limit buy order")
       await binanceClient.cancelOrder(order.id, market);
       console.log('Cancelled limit buy order')
     }
@@ -24,7 +25,7 @@ const tick = async (config, binanceClient) => {
   // Calculate new orders parameters
   const balances = await binanceClient.fetchBalance();
   const assetBalance = balances.free[asset]; // e.g. 0.01 BTC
-  const baseBalance = balances.free[base]; // e.g. 20 USDT
+  const baseBalance = balances.free[base] / marketPrice; // e.g. 20 USDT
   const volume = (90 * allocation) / marketPrice;
   const buyPrice = marketPrice - (marketPrice * spread);
   const sellPrice = buyPrice + (2 * spread);
@@ -33,19 +34,22 @@ const tick = async (config, binanceClient) => {
   console.log(`New tick for ${market}...`)
   console.log(`Market price: ${marketPrice}`)
 
-  if (orders.length === 0) { 
+  if (baseBalance > assetBalance) {
     console.log(`Creating limit buy order for ${volume} BTC @ $${buyPrice}`)
     await binanceClient.createLimitBuyOrder(market, volume, buyPrice); 
     console.log(`Created limit buy order for ${volume} BTC @ $${buyPrice}`)
+  } else {
+    console.log(baseBalance)
+    console.log(assetBalance * marketPrice)
   }
 
-  if (assetBalance > volume) {
+  if (assetBalance > baseBalance && orders.length === 0) {
     console.log(`Creating limit sell order for ${volume} BTC @ $${sellPrice}`)
     await binanceClient.createLimitSellOrder(market, volume, sellPrice);
     console.log(`Created limit sell order for ${volume} BTC @ $${sellPrice}`)    
   } else {
-    console.log(assetBalance)
-    console.log(volume)
+    console.log(`Asset balance: ${assetBalance}`)
+    console.log(`Volume: ${volume}`)
   }
 
 };
@@ -55,9 +59,9 @@ const run = () => {
   const config = { 
     asset: "BTC",
     base: "BUSD",
-    allocation: 0.2,     // Percentage of our available funds that we trade
+    allocation: 1,     // Percentage of our available funds that we trade
     spread: 0.0001,         // Percentage above and below market prices for sell and buy orders 
-    tickInterval: 2000  // Duration between each tick, in milliseconds
+    tickInterval: 10000  // Duration between each tick, in milliseconds
   };
   const binanceClient = new ccxt.binance({
     apiKey: process.env.API_KEY,
