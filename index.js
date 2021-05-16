@@ -1,26 +1,36 @@
 require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
+let lastPrice;
 
-const config = {
-  asset: "BTC",
-  base: "BUSD",
-  allocation: 1,
-  spread: 0.0001,
-  tickInterval: 10000
-};
+function run() {
 
-const binanceClient = new ccxt.binance({
-  apiKey: process.env.API_KEY,
-  secret: process.env.API_SECRET
-});
+  const config = {
+    asset: "BTC",
+    base: "BUSD",
+    allocation: 1,
+    spread: 0.0001,
+    tickInterval: 10000
+  };
+  
+  const binanceClient = new ccxt.binance({
+    apiKey: process.env.API_KEY,
+    secret: process.env.API_SECRET
+  });
+  
+  tick(binanceClient, config)
+  setInterval(tick, config.tickInterval, binanceClient, config)
+}
 
-async function run(client, config, lastPrice) {
+async function tick(client, config) {
   const market = `${config.asset}/${config.base}`
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
   report(market, lastPrice, currentPrice, wallet)
-  // run(client, config, currentPrice)
+  
+  // More code to go here
+  
+  lastPrice = currentPrice
 }
 
 function report(market, lastPrice, currentPrice, wallet) {
@@ -53,7 +63,7 @@ async function marketPrice(market) {
   const results = await Promise.all([
     axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${market}`)
   ]);
-  console.log(results)
+  // console.log(results)
   return results[0].data.price
 }
 
@@ -80,4 +90,4 @@ async function cancelBuyOrder(market) {
   })
 }
 
-run(binanceClient, config);
+run();
