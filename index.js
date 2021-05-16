@@ -19,12 +19,13 @@ async function run(client, config, lastPrice) {
   const market = `${config.asset}/${config.base}`
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
+  console.log('')
   console.log('New Tick\n--------')
   console.log(`Market: ${market}`)
   console.log(`Last Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
   console.log(comparePrices(lastPrice, currentPrice))
-  console.log(`Wallet: ${wallet}`)
+  console.log(`Wallet\nBUSD ${wallet.base}\nBTC ${wallet.asset}`)
   run(client, config, currentPrice)
 }
 
@@ -40,6 +41,7 @@ async function getWallet(client, config) {
     asset: balances.free[config.asset],
     base: balances.free[config.base]
   }
+  return wallet
 }
 
 async function marketPrice(market) {
