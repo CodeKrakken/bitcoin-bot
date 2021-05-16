@@ -3,8 +3,8 @@ const ccxt = require('ccxt');
 const axios = require('axios');
 const { config } = require('dotenv');
 let lastPrice;
-let boughtPrice;
-let soldPrice;
+let boughtPrice = 0;
+let soldPrice = 0;
 
 function run() {
 
@@ -45,10 +45,10 @@ function report(market, lastPrice, currentPrice, wallet) {
 }
 
 function trade(market, wallet, price, client, config) {
-  if (wallet.base/price > wallet.asset) {
+  if (wallet.base/price > wallet.asset && wallet.base > 15) {
     newBuyOrder(market, wallet.base, price, client, config)
   } else if (wallet.base/price < wallet.asset && price > boughtPrice) {
-    newSellOrder()
+    newSellOrder(market, wallet.asset, price, client, config)
   }
 }
 
@@ -84,9 +84,11 @@ async function newBuyOrder(market, balance, price, client, config) {
   console.log(`Created limit buy order for ${volume} BTC @ $${price}`)
 }
 
-async function newSellOrder(market, volume, price) {
+async function newSellOrder(market, balance, price, client, config) {
+  const volume = balance * config.allocation
   console.log(`Creating limit sell order for ${volume} BTC @ $${price}`)
   await client.createLimitSellOrder(market, volume, price)
+  soldPrice = price
   console.log(`Created limit sell order for ${volume} BTC @ $${price}`)
 }
 
