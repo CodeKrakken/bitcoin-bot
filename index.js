@@ -23,12 +23,16 @@ async function run(client, config, lastPrice) {
   console.log(`Market: ${market}`)
   console.log(`Last Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
+  console.log(comparePrices(lastPrice, currentPrice))
   console.log(`Wallet: ${wallet}`)
   run(client, config, currentPrice)
 }
 
-
-
+function comparePrices(lastPrice, currentPrice) {
+  const direction = lastPrice < currentPrice ? '+' : '-'
+  const percentage = Math.abs(lastPrice - currentPrice)/lastPrice*100
+  return direction + ' ' + percentage + '%'
+}
 
 async function getWallet(client, config) {
   const balances = await client.fetchBalance();
