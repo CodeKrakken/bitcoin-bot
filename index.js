@@ -4,16 +4,19 @@ const axios = require('axios');
 let lastPrice;
 let boughtPrice = 0;
 let soldPrice = 0;
-let buying
+let buying = true
+let volume
 
 function run() {
 
   const config = {
     asset: "DOGE",
-    base: "BUSD",
+    base: "USDT",
     allocation: 1,
     spread: 0.0001,
-    tickInterval: 10000
+    tickInterval: 10000,
+    volume: 100,
+    swing: 0.05
   };
   
   const binanceClient = new ccxt.binance({
@@ -30,6 +33,7 @@ async function tick(client, config) {
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
   report(market, lastPrice, currentPrice, wallet, config)
+  cancelBuyOrder(client, market)
   trade(market, wallet, currentPrice, client, config)
   lastPrice = currentPrice
 }
@@ -45,9 +49,11 @@ function report(market, lastPrice, currentPrice, wallet, config) {
 }
 
 function trade(market, wallet, price, client, config) {
-  if (buying && wallet.base/price > wallet.asset && wallet.base > 15) {
+  if (buying) {
+    console.log('trading')
+
     newBuyOrder(market, wallet.base, price, client, config)
-  } else if (!buying && wallet.base/price < wallet.asset && price >= boughtPrice*1.05) {
+  } else if ((!buying) && wallet.base/price < wallet.asset && price >= boughtPrice*(1 + config.swing)) {
     newSellOrder(market, wallet.asset, price, client, config)
   }
 }
@@ -72,12 +78,11 @@ async function marketPrice(market) {
   const results = await Promise.all([
     axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${market}`)
   ]);
-  // console.log(results)
   return results[0].data.price
 }
 
 async function newBuyOrder(market, balance, price, client, config) {
-  const volume = 100/price // balance/price * config.allocation
+  volume = config.volume/price // balance/price * config.allocation
   console.log(`Creating limit buy order for ${volume} ${config.asset} @ $${price}`)
   await client.createLimitBuyOrder(market, volume, price)
   boughtPrice = price
@@ -86,7 +91,7 @@ async function newBuyOrder(market, balance, price, client, config) {
 }
 
 async function newSellOrder(market, balance, price, client, config) {
-  const volume = 100/price //balance * config.allocation
+  const volume = config.volume*price //balance * config.allocation
   console.log(`Creating limit sell order for ${volume} ${config.asset} @ $${price}`)
   await client.createLimitSellOrder(market, volume, price)
   soldPrice = price
@@ -94,12 +99,12 @@ async function newSellOrder(market, balance, price, client, config) {
   console.log(`Created limit sell order for ${volume} ${config.asset} @ $${price}`)
 }
 
-async function cancelBuyOrder(market) {
-  const orders = await binanceClient.fetchOpenOrders(market);
+async function cancelBuyOrder(client, market) {
+  const orders = await client.fetchOpenOrders(market);
   orders.forEach(async order => {
     if (order.side === 'buy') {
       console.log("Cancelling limit buy order")
-      await binanceClient.cancelOrder(order.id, market)
+      await client.cancelOrder(order.id, market)
       console.log("Cancelled limit buy order")
     }
   })
