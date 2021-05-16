@@ -1,15 +1,15 @@
 require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
-const { config } = require('dotenv');
 let lastPrice;
 let boughtPrice = 0;
 let soldPrice = 0;
+let buying
 
 function run() {
 
   const config = {
-    asset: "BTC",
+    asset: "DOGE",
     base: "BUSD",
     allocation: 1,
     spread: 0.0001,
@@ -29,25 +29,25 @@ async function tick(client, config) {
   const market = `${config.asset}/${config.base}`
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
-  report(market, lastPrice, currentPrice, wallet)
+  report(market, lastPrice, currentPrice, wallet, config)
   trade(market, wallet, currentPrice, client, config)
   lastPrice = currentPrice
 }
 
-function report(market, lastPrice, currentPrice, wallet) {
+function report(market, lastPrice, currentPrice, wallet, config) {
   console.log('')
   console.log('New Tick\n--------')
   console.log(`Market: ${market}`)
   console.log(`Last Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
   console.log(comparePrices(lastPrice, currentPrice))
-  console.log(`\nWallet\nBUSD ${wallet.base}\nBTC ${wallet.asset}`)
+  console.log(`\nWallet\n${wallet.base} ${config.base}\n${wallet.asset} ${config.asset}`)
 }
 
 function trade(market, wallet, price, client, config) {
-  if (wallet.base/price > wallet.asset && wallet.base > 15) {
+  if (buying && wallet.base/price > wallet.asset && wallet.base > 15) {
     newBuyOrder(market, wallet.base, price, client, config)
-  } else if (wallet.base/price < wallet.asset && price > boughtPrice) {
+  } else if (!buying && wallet.base/price < wallet.asset && price >= boughtPrice*1.05) {
     newSellOrder(market, wallet.asset, price, client, config)
   }
 }
@@ -77,19 +77,21 @@ async function marketPrice(market) {
 }
 
 async function newBuyOrder(market, balance, price, client, config) {
-  const volume = balance/price * config.allocation
-  console.log(`Creating limit buy order for ${volume} BTC @ $${price}`)
+  const volume = 100/price // balance/price * config.allocation
+  console.log(`Creating limit buy order for ${volume} ${config.asset} @ $${price}`)
   await client.createLimitBuyOrder(market, volume, price)
   boughtPrice = price
-  console.log(`Created limit buy order for ${volume} BTC @ $${price}`)
+  buying = false
+  console.log(`Created limit buy order for ${volume} ${config.asset} @ $${price}`)
 }
 
 async function newSellOrder(market, balance, price, client, config) {
-  const volume = balance * config.allocation
-  console.log(`Creating limit sell order for ${volume} BTC @ $${price}`)
+  const volume = 100/price //balance * config.allocation
+  console.log(`Creating limit sell order for ${volume} ${config.asset} @ $${price}`)
   await client.createLimitSellOrder(market, volume, price)
   soldPrice = price
-  console.log(`Created limit sell order for ${volume} BTC @ $${price}`)
+  buying = true
+  console.log(`Created limit sell order for ${volume} ${config.asset} @ $${price}`)
 }
 
 async function cancelBuyOrder(market) {
