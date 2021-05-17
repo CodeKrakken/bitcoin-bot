@@ -3,7 +3,7 @@ const ccxt = require('ccxt');
 const axios = require('axios');
 let lastPrice;
 let boughtPrice = 0;
-let soldPrice = 0;
+let askingPrice;
 let rising
 let state
 
@@ -14,7 +14,7 @@ function run() {
     base: "USDT",
     allocation: 0.9,
     tickInterval: 10000,
-    fee: 0.001,
+    fee: 0.002,
     minimumTrade: 10
   };
   
@@ -43,6 +43,7 @@ function getState(orders, wallet, price) {
   let outcome
   if (orders.length === 1) {
     outcome = 'Selling'
+    console.log(orders)
   } else {
     outcome = wallet.base > wallet.asset * price ? 'Waiting to buy' : 'Waiting to sell'
   }
@@ -56,7 +57,8 @@ function report(market, lastPrice, currentPrice, wallet, config) {
   console.log(`Action: ${state}`)
   console.log(`\nLast Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
-  if (state === 'Waiting to sell') { console.log(`Profit price: ${boughtPrice * (1 + config.fee*3)}`)}
+  if (state === 'Waiting to sell') { console.log(`Profit price: ${boughtPrice * (1 + config.fee*2)}`)}
+  if (state === 'Selling') { console.log(`Selling at: ${askingPrice}`)}
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log(`\nWallet\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
 }
@@ -66,21 +68,11 @@ function trade(market, wallet, price, client, config) {
     newBuyOrder(market, price, client, config, wallet)
   } else if (state === 'Waiting to sell' && price > (boughtPrice * (1 + config.fee*3)) && (!rising)) {
     newSellOrder(market, price, client, config, wallet)
-  } else {
-    console.log('No order placed.')
-    console.log(state)
-    console.log(price)
-    console.log(boughtPrice)
-    console.log(config.fee)
-    console.log(rising)
   }
 }
 
 async function newBuyOrder(market, price, client, config, wallet) {
   const assetVolume = wallet.base / price * config.allocation
-  console.log(wallet.base)
-  console.log(price)
-  console.log(config.allocation)
   await client.createLimitBuyOrder(market, assetVolume, price)
   boughtPrice = price
   state = 'Buying'
@@ -90,7 +82,7 @@ async function newBuyOrder(market, price, client, config, wallet) {
 async function newSellOrder(market, price, client, config, wallet) {
   const assetVolume = wallet.asset * config.allocation
   await client.createLimitSellOrder(market, assetVolume, price)
-  soldPrice = price
+  askingPrice = price
   state = 'Selling'
   console.log(`Created limit sell order for ${assetVolume} ${config.asset} @ $${price}`)
 }
