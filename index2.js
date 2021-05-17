@@ -13,8 +13,8 @@ let state
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "BUSD",
+    asset: "ETH",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     fee: 0.002,
@@ -74,7 +74,8 @@ async function trade(market, wallet, price, client, config) {
 
 async function newBuyOrder(market, price, client, config, wallet) {
   const assetVolume = config.allocation / price
-  await client.createLimitBuyOrder(market, assetVolume, price)
+  console.log(`Creating limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
+  // await client.createLimitBuyOrder(market, assetVolume, price)
   boughtPrice = price
   state = 'Buying'
   console.log(`Created limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
@@ -83,7 +84,7 @@ async function newBuyOrder(market, price, client, config, wallet) {
 async function newSellOrder(market, price, client, config, wallet) {
   const assetVolume = config.allocation / price
   const profitPrice = price * (1 + config.fee*config.margin)
-  await client.createLimitSellOrder(market, assetVolume, profitPrice)
+  // await client.createLimitSellOrder(market, assetVolume, profitPrice)
   askingPrice = price
   state = 'Selling'
   console.log(`Created limit sell order for ${assetVolume} ${config.asset} @ $${profitPrice}`)
