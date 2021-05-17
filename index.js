@@ -5,7 +5,7 @@ let lastPrice;
 let boughtPrice = 0;
 let soldPrice = 0;
 let rising
-let buying
+let state
 
 function run() {
 
@@ -13,7 +13,7 @@ function run() {
     asset: "DOGE",
     base: "USDT",
     allocation: 0.9,
-    tickInterval: 2000,
+    tickInterval: 10000,
     fee: 0.001,
     minimumTrade: 10
   };
@@ -31,40 +31,59 @@ async function tick(client, config) {
   const market = `${config.asset}/${config.base}`
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
-  buying = wallet.asset < wallet.base/currentPrice
+  const orders = await client.fetchOpenOrders(market);
+  cancelBuyOrder(client, market, orders)
+  state = getState(orders, wallet, currentPrice)
   report(market, lastPrice, currentPrice, wallet, config)
-  cancelBuyOrder(client, market)
   trade(market, wallet, currentPrice, client, config)
   lastPrice = currentPrice
+}
+
+function getState(orders, wallet, price) {
+  let outcome
+  if (orders.length === 1) {
+    outcome = 'Selling'
+  } else {
+    outcome = wallet.base > wallet.asset * price ? 'Waiting to buy' : 'Waiting to sell'
+  }
+  return outcome
 }
 
 function report(market, lastPrice, currentPrice, wallet, config) {
   console.log('')
   console.log('New Tick\n--------')
   console.log(`Market: ${market}`)
+  console.log(`Action: ${state}`)
   console.log(`\nLast Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
-  if (!buying) { console.log(`Profit price: ${boughtPrice * (1 + config.fee*3)}`)}
-
+  if (state === 'Waiting to sell') { console.log(`Profit price: ${boughtPrice * (1 + config.fee*3)}`)}
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log(`\nWallet\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
 }
 
 function trade(market, wallet, price, client, config) {
-  if (buying && rising) {
+  if (state === 'Waiting to buy' && rising) {
     newBuyOrder(market, price, client, config, wallet)
-  } else if ((!buying) && price > boughtPrice * (1 + config.fee*3) && (!rising)) { //= boughtPrice*(1 + config.swing)) {
+  } else if (state === 'Waiting to sell' && price > (boughtPrice * (1 + config.fee*3)) && (!rising)) {
     newSellOrder(market, price, client, config, wallet)
   } else {
-    console.log(`\nHolding\nBuying: ${buying}\nRising: ${rising}`)
+    console.log('No order placed.')
+    console.log(state)
+    console.log(price)
+    console.log(boughtPrice)
+    console.log(config.fee)
+    console.log(rising)
   }
 }
 
 async function newBuyOrder(market, price, client, config, wallet) {
-  const assetVolume = wallet.base * price * config.allocation
+  const assetVolume = wallet.base / price * config.allocation
+  console.log(wallet.base)
+  console.log(price)
+  console.log(config.allocation)
   await client.createLimitBuyOrder(market, assetVolume, price)
   boughtPrice = price
-  buying = false
+  state = 'Buying'
   console.log(`Created limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
 }
 
@@ -72,7 +91,7 @@ async function newSellOrder(market, price, client, config, wallet) {
   const assetVolume = wallet.asset * config.allocation
   await client.createLimitSellOrder(market, assetVolume, price)
   soldPrice = price
-  buying = true
+  state = 'Selling'
   console.log(`Created limit sell order for ${assetVolume} ${config.asset} @ $${price}`)
 }
 
@@ -107,8 +126,7 @@ async function marketPrice(market) {
 }
 
 
-async function cancelBuyOrder(client, market) {
-  const orders = await client.fetchOpenOrders(market);
+async function cancelBuyOrder(client, market, orders) {
   orders.forEach(async order => {
     if (order.side === 'buy') {
       await client.cancelOrder(order.id, market)
