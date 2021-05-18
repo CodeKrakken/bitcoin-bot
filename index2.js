@@ -14,10 +14,11 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "USDT",
+    asset: "DOGE",
+    base: "BUSD",
     allocation: 15,
     tickInterval: 2000,
+    buyInterval: 2 * 60 * 1000,
     fee: 0.002,
     margin: 2
   };
@@ -61,13 +62,14 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(`Current Price: ${currentPrice}`)
   console.log(`Last Buy Time: ${lastBuyTime}`)
   console.log(` Current time: ${dateObject.getTime()}`)
+  console.log(`  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}`)
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log(`\nWallet\n\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject) {
   let timeNow = dateObject.getTime()
-  if (rising && wallet.base >= config.allocation && wallet.asset >= config.allocation / price && timeNow - lastBuyTime > 60000) {
+  if (rising && wallet.base >= config.allocation && wallet.asset >= config.allocation / price && timeNow - lastBuyTime > config.buyInterval) {
     await newBuyOrder(market, price, client, config, wallet)
     dateObject = new Date
     lastBuyTime = dateObject.getTime()
@@ -79,7 +81,7 @@ async function newBuyOrder(market, price, client, config, wallet, lastBuyTime) {
   const assetVolume = config.allocation / price
   await client.createLimitBuyOrder(market, assetVolume, price)
   state = 'Buying'
-  console.log(`\nCreated limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
+  console.log(`\nCreated limit buy order for  ${assetVolume} ${config.asset} @ $${price}`)
 }
 
 async function newSellOrder(market, price, client, config, wallet) {
