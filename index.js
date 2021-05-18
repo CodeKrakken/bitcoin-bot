@@ -14,8 +14,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "USDT",
+    asset: "DOGE",
+    base: "BUSD",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
