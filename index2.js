@@ -15,7 +15,7 @@ function run() {
 
   const config = {
     asset: "BTC",
-    base: "BUSD",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     fee: 0.002,
@@ -36,9 +36,11 @@ async function tick(client, config) {
   const currentPrice = await marketPrice(market)
   const wallet = await getWallet(client, config)
   const orders = await client.fetchOpenOrders(market);
+  if (orders.length === 0) { lastBuyTime = 0 }
   state = getState(orders, wallet, currentPrice)
-  report(market, lastPrice, currentPrice, wallet, config, orders)
-  trade(market, wallet, currentPrice, client, config)
+  let dateObject = new Date
+  report(market, lastPrice, currentPrice, wallet, config, orders, dateObject)
+  trade(market, wallet, currentPrice, client, config, dateObject)
   lastPrice = currentPrice
 }
 
@@ -52,22 +54,18 @@ function getState(orders, wallet, price) {
   return outcome
 }
 
-function report(market, lastPrice, currentPrice, wallet, config, orders) {
-  console.log('')
-  console.log('New Tick\n--------')
+function report(market, lastPrice, currentPrice, wallet, config, orders, dateObject) {
+  console.log('\n\nNew Tick\n--------\n')
   console.log(`Market: ${market}`)
-  console.log(`Action: ${state}`)
-  console.log(`\nLast Price: ${lastPrice}`)
+  console.log(`\n   Last Price: ${lastPrice}`)
   console.log(`Current Price: ${currentPrice}`)
   console.log(`Last Buy Time: ${lastBuyTime}`)
-  if (state === 'Waiting to sell') { console.log(`Profit price: ${boughtPrice * (1 + config.fee*config.margin)}`)}
-  if (state === 'Selling') { console.log(`Selling at: ${askingPrice}`)}
+  console.log(` Current time: ${dateObject.getTime()}`)
   console.log('\n' + comparePrices(lastPrice, currentPrice))
-  console.log(`\nWallet\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
+  console.log(`\nWallet\n\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
 }
 
-async function trade(market, wallet, price, client, config) {
-  let dateObject = new Date
+async function trade(market, wallet, price, client, config, dateObject) {
   let timeNow = dateObject.getTime()
   if (rising && wallet.base >= config.allocation && wallet.asset >= config.allocation / price && timeNow - lastBuyTime > 60000) {
     await newBuyOrder(market, price, client, config, wallet)
@@ -79,16 +77,15 @@ async function trade(market, wallet, price, client, config) {
 
 async function newBuyOrder(market, price, client, config, wallet, lastBuyTime) {
   const assetVolume = config.allocation / price
-  console.log(`Creating limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
-  // await client.createLimitBuyOrder(market, assetVolume, price)
+  await client.createLimitBuyOrder(market, assetVolume, price)
   state = 'Buying'
-  console.log(`Created limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
+  console.log(`\nCreated limit buy order for ${assetVolume} ${config.asset} @ $${price}`)
 }
 
 async function newSellOrder(market, price, client, config, wallet) {
   const assetVolume = config.allocation / price
   const profitPrice = price * (1 + config.fee*config.margin)
-  // await client.createLimitSellOrder(market, assetVolume, profitPrice)
+  await client.createLimitSellOrder(market, assetVolume, profitPrice)
   askingPrice = price
   state = 'Selling'
   console.log(`Created limit sell order for ${assetVolume} ${config.asset} @ $${profitPrice}`)
