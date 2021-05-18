@@ -4,7 +4,7 @@
 require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
-let lastPrice;
+let lastPrice = 0;
 let boughtPrice = 0;
 let askingPrice;
 let rising
@@ -58,13 +58,11 @@ function getState(orders, wallet, price) {
 function report(market, lastPrice, currentPrice, wallet, config, orders, dateObject) {
   console.log('\n\nNew Tick\n--------\n')
   console.log(`Market: ${market}`)
-  console.log(`\n   Last Price: ${lastPrice}`)
-  console.log(`Current Price: ${currentPrice}`)
-  console.log(`Last Buy Time: ${lastBuyTime}`)
-  console.log(` Current time: ${dateObject.getTime()}`)
+  console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
+  console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(`  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}`)
   console.log('\n' + comparePrices(lastPrice, currentPrice))
-  console.log(`\nWallet\n\n  ${wallet.base} ${config.base}\n+ ${wallet.asset} ${config.asset}\n= ${wallet.base + wallet.asset * currentPrice} ${config.base}`)
+  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((wallet.base + wallet.asset * currentPrice), 2)} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject) {
@@ -81,7 +79,7 @@ async function newBuyOrder(market, price, client, config, wallet, lastBuyTime) {
   const assetVolume = config.allocation / price
   await client.createLimitBuyOrder(market, assetVolume, price)
   state = 'Buying'
-  console.log(`\nCreated limit buy order for  ${assetVolume} ${config.asset} @ $${price}`)
+  console.log(`\nCreated limit buy order for  ${n(assetVolume, 5)} ${config.asset} @ $${n(price)}`)
 }
 
 async function newSellOrder(market, price, client, config, wallet) {
@@ -90,20 +88,19 @@ async function newSellOrder(market, price, client, config, wallet) {
   await client.createLimitSellOrder(market, assetVolume, profitPrice)
   askingPrice = price
   state = 'Selling'
-  console.log(`Created limit sell order for ${assetVolume} ${config.asset} @ $${profitPrice}`)
+  console.log(`Created limit sell order for ${n(assetVolume, 5)} ${config.asset} @ $${n(profitPrice, 5)}`)
 }
 
 function comparePrices(lastPrice, currentPrice) {
-  let direction
+  let direction = '+'
   if(lastPrice < currentPrice) {
-    direction = '+'
     rising = true
   } else if (lastPrice > currentPrice) {
     direction = '-'
     rising = false
   }
   const percentage = Math.abs(lastPrice - currentPrice)/lastPrice*100
-  return direction + ' ' + percentage + '%'
+  return direction + ' ' + n(percentage, 5) + '%'
 }
 
 async function getWallet(client, config) {
@@ -131,6 +128,10 @@ async function cancelBuyOrder(client, market, orders) {
       console.log("Cancelled limit buy order")
     }
   })
+}
+
+function n(n, d) {
+  return Number.parseFloat(n).toFixed(d);
 }
 
 run();
