@@ -14,8 +14,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "DOGE",
-    base: "BUSD",
+    asset: "BTC",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -60,8 +60,10 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(`Market: ${market}`)
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
-  console.log(`  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}`)
+  console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
   console.log('\n' + comparePrices(lastPrice, currentPrice))
+  console.log('\nOrders\n')
+  console.log(presentOrders(orders))
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((wallet.base + wallet.asset * currentPrice), 2)} ${config.base}`)
 }
 
@@ -132,6 +134,19 @@ async function cancelBuyOrder(client, market, orders) {
 
 function n(n, d) {
   return Number.parseFloat(n).toFixed(d);
+}
+
+function presentOrders(orders) {
+  let returnArray = []
+  orders.forEach(order => {
+    returnArray.push({
+      'side': order.side,
+      'volume': order.amount,
+      'price': order.price,
+      'time': order.timestamp
+    })
+  })
+  return returnArray
 }
 
 run();
