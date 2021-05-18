@@ -14,8 +14,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "DOGE",
-    base: "BUSD",
+    asset: "BTC",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -63,8 +63,9 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log('\nOrders\n')
-  console.log(presentOrders(orders))
-  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((wallet.base + wallet.asset * currentPrice), 2)} ${config.base}`)
+  const ordersObject = presentOrders(orders, currentPrice)
+  console.log(ordersObject)
+  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject) {
@@ -136,15 +137,25 @@ function n(n, d) {
   return Number.parseFloat(n).toFixed(d);
 }
 
-function presentOrders(orders) {
+function presentOrders(orders, currentPrice) {
   let returnArray = []
+  let totalCurrentDollar = 0
+  let totalProjectedDollar = 0
   orders.forEach(order => {
     returnArray.push({
       'side': order.side,
+      'time': order.timestamp,
       'volume': order.amount,
       'price': order.price,
-      'time': order.timestamp
+      'currentDollar': n((order.amount * currentPrice), 2),
+      'projectedDollar': n((order.amount * order.price), 2)
     })
+    totalCurrentDollar += (order.amount * currentPrice)
+    totalProjectedDollar += (order.amount * order.price)
+  })
+  returnArray.push({
+    'totalCurrentDollar': totalCurrentDollar,
+    'totalProjectedDollar': totalProjectedDollar
   })
   return returnArray
 }
