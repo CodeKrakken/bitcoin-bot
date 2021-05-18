@@ -13,8 +13,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "USDT",
+    asset: "DOGE",
+    base: "BUSD",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -36,11 +36,12 @@ async function tick(client, config) {
   const symbol = `${config.asset}${config.base}` 
   const currentPrice = await marketPrice(symbol)
   const wallet = await getWallet(client, config)
-  const orders = await client.fetchOpenOrders(market);
-  if (orders.length === 0) { 
+  let orders = await client.fetchOpenOrders(market);
+  if (orders.length === 1) { 
     lastBuyTime = 0 
-  // } else {
-  //   refreshOrders(orders)
+  } else {
+    console.log('orders refreshing')
+    refreshOrders(client, orders, currentPrice, config, market)
   }
   let dateObject = new Date
   report(market, lastPrice, currentPrice, wallet, config, orders, dateObject)
@@ -58,27 +59,26 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log('\nOrders\n')
   const ordersObject = presentOrders(orders, currentPrice)
   console.log(ordersObject)
-  console.log(orders)
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject) {
   let timeNow = dateObject.getTime()
   if (rising && wallet.base >= config.allocation && wallet.asset >= config.allocation / price && timeNow - lastBuyTime > config.buyInterval) {
-    await newBuyOrder(market, price, client, config, wallet)
+    await newBuyOrder(market, price, client, config)
     dateObject = new Date
     lastBuyTime = dateObject.getTime()
-    newSellOrder(market, price, client, config, wallet)
+    newSellOrder(market, price, client, config)
   }
 }
 
-async function newBuyOrder(market, price, client, config, wallet, lastBuyTime) {
+async function newBuyOrder(market, price, client, config) {
   const assetVolume = config.allocation / price
   await client.createLimitBuyOrder(market, assetVolume, price)
   console.log(`\nCreated limit buy order for  ${n(assetVolume, 5)} ${config.asset} @ $${n(price)}`)
 }
 
-async function newSellOrder(market, price, client, config, wallet) {
+async function newSellOrder(market, price, client, config) {
   const assetVolume = config.allocation / price
   const profitPrice = price * (1 + config.fee*config.margin)
   await client.createLimitSellOrder(market, assetVolume, profitPrice)
@@ -115,13 +115,21 @@ async function marketPrice(symbol) {
 }
 
 
-async function refreshOrders(client, market, orders) {
+async function refreshOrders(client, orders, price, config, market) {
+  let consolidatedSellVolume = 0
+  let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
   orders.forEach(async order => {
     if (order.side === 'buy') {
-      await client.cancelOrder(order.id, market)
+      await client.cancelOrder(order.id, order.symbol)
       console.log("Cancelled limit buy order")
+      newBuyOrder(order.symbol, price, client, config)
+    } else if (order.side === 'sell') {
+      await client.cancelOrder(order.id, order.symbol)
     }
   })
+  await client.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
+  console.log(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 5)} ${config.asset} @ $${n(consolidatedSellPrice, 5)}`)
+  orders = await client.fetchOpenOrders(market);
 }
 
 function n(n, d) {
