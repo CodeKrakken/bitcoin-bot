@@ -13,8 +13,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "DOGE",
-    base: "BUSD",
+    asset: "BTC",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -39,13 +39,10 @@ async function tick(client, config) {
   let orders = await client.fetchOpenOrders(market);
   if (orders.length === 1) { 
     lastBuyTime = 0 
-  } else {
-    console.log('orders refreshing')
-    refreshOrders(client, orders, currentPrice, config, market)
   }
   let dateObject = new Date
   report(market, lastPrice, currentPrice, wallet, config, orders, dateObject)
-  trade(market, wallet, currentPrice, client, config, dateObject)
+  trade(market, wallet, currentPrice, client, config, dateObject, orders)
   lastPrice = currentPrice
 }
 
@@ -62,9 +59,10 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
-async function trade(market, wallet, price, client, config, dateObject) {
+async function trade(market, wallet, price, client, config, dateObject, orders) {
   let timeNow = dateObject.getTime()
   if (rising && wallet.base >= config.allocation && wallet.asset >= config.allocation / price && timeNow - lastBuyTime > config.buyInterval) {
+    refreshOrders(client, orders, price, config, market)
     await newBuyOrder(market, price, client, config)
     dateObject = new Date
     lastBuyTime = dateObject.getTime()
