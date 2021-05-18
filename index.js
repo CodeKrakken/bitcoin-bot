@@ -14,7 +14,7 @@ let state
 function run() {
 
   const config = {
-    asset: "DOGE",
+    asset: "BTC",
     base: "USDT",
     allocation: 0.9,
     tickInterval: 10000,
