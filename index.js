@@ -13,8 +13,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "DOGE",
-    base: "BUSD",
+    asset: "BTC",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -26,16 +26,19 @@ function run() {
     apiKey: process.env.API_KEY,
     secret: process.env.API_SECRET
   });
-  
+  // console.log(binanceClient)
   tick(binanceClient, config)
   setInterval(tick, config.tickInterval, binanceClient, config)
 }
 
-async function tick(client, config) {
+async function tick(client, config) {  
   const market = `${config.asset}/${config.base}`
-  const symbol = `${config.asset}${config.base}` 
+  const symbol = `${config.asset}${config.base}`
   const currentPrice = await marketPrice(symbol)
   const wallet = await getWallet(client, config)
+  const historicalData = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
+  const prettyData = objectify(historicalData.data)
+  console.log(`Average Open: ${getAverage(prettyData, 'num_trades')}`)
   let orders = await client.fetchOpenOrders(market);
   if (orders.length === 1) { 
     lastBuyTime = 0 
@@ -55,7 +58,7 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log('\nOrders\n')
   const ordersObject = presentOrders(orders, currentPrice)
-  console.log(ordersObject)
+  // console.log(ordersObject)
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
@@ -155,6 +158,38 @@ function presentOrders(orders, currentPrice) {
     'totalProjectedDollar': totalProjectedDollar
   })
   return returnArray
+}
+
+function objectify(data) {
+  let dataObjectArray = []
+  data.forEach(period => {
+    dataObjectArray.push({
+      'start': period[0],
+      'open': parseFloat(period[1]),
+      'high': period[2],
+      'low': period[3],
+      'close': period[4],
+      'v': period[5],
+      'end': period[6],
+      'qav': period[7],
+      'num_trades': period[8],
+      'taker_base_vol': period[9],
+      'taker_quote_vol': period[10],
+      'ignore': period[11]
+    })
+  })
+  return dataObjectArray
+}
+
+function getAverage(data, parameter) {
+  console.log(data)
+  let total = 0
+  data.forEach(datum => {
+    total += datum[parameter]
+  })
+  console.log(data.length)
+  console.log(`total: ${total}`)
+  return total / data.length
 }
 
 run();
