@@ -13,8 +13,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "USDT",
+    asset: "DOGE",
+    base: "BUSD",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -56,7 +56,7 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log('\nOrders\n')
   const ordersObject = presentOrders(orders, currentPrice)
   console.log(ordersObject)
-  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
+  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject, orders) {
