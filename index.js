@@ -219,7 +219,7 @@ function sma(rawData, time, parameter) {
   if (time < data.length) {
     data = data.slice((time * -1))
   }
-  return (data.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / data.length
+  return average(data)
 }
 
 function ema(rawData, time, parameter) {
@@ -235,23 +235,27 @@ function ema(rawData, time, parameter) {
   return +currentEma.toFixed(2)
 }
 
-function atr(rawData) {
-  let highs = extractData(rawData, 'high')
-  let lows = extractData(rawData, 'low')
-  let closes = extractData(rawData, 'close')
+function atr(data, time) {
+  let highs = extractData(data, 'high')
+  let lows = extractData(data, 'low')
+  let closes = extractData(data, 'close')
   let trueRange  = []
 
-  for (let i = 1; i - 1 < rawData.length-1; i++) {
+  for (let i = 1; i - 1 < data.length-1; i++) {
     let tr1 = (highs[i]-lows[i])
     let tr2 = Math.abs(highs[i] - closes[i])
     let tr3 = Math.abs(closes[i-1] - lows[i])
     trueRange.push(Math.max(tr1, tr2, tr3))
   }
 
-  if (time < data.length) {
-    data = data.slice((time * -1))
+  if (time < trueRange.length) {
+    trueRange = trueRange.slice((time * -1))
   }
-  return (data.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / time
+  return average(trueRange)
+}
+
+function average(array) {
+  return (array.reduce(( a, b ) => a + b, 0 )) / array.length
 }
 
 run();
