@@ -58,7 +58,7 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log('\nOrders\n')
   const ordersObject = trimOrders(orders, currentPrice)
   console.log(presentOrders(ordersObject))
-  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
+  console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject.totals.totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject.totals.totalProjectedDollar), 2)} ${config.base}`)
 }
 
 async function trade(market, wallet, price, client, config, dateObject, orders) {
@@ -183,14 +183,14 @@ function trim(data) {
 }
 
 function presentOrders(ordersObject) {
-  let returnArray = []
-  returnArray.push(`Side     Time               Volume     Price     Current $     Projected $`)
+  let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
   ordersObject.orders.forEach(order => {
-    returnArray.push(`${order.side}     ${order.time}     ${order.volume}     ${order.price}     ${order.currentDollar}     ${order.projectedDollar}`)
-  })
-  returnArray.push(ordersObject.totals.totalCurrentDollar)
-  returnArray.push(ordersObject.totals.totalProjectedDollar)
-  return returnArray
+    returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}     ${order.price}     ${order.currentDollar}      ${order.projectedDollar}\n\n`)
+  })                                 
+  returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
+  returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
+  
+  return returnString
 }
 
 function extractData(dataObject, key) {
