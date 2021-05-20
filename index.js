@@ -47,14 +47,22 @@ async function tick(client, config) {
 function report(market, lastPrice, currentPrice, wallet, config, orders, dateObject, trimmedHistory) {
   console.log('\n\nNew Tick\n--------\n')
   console.log(`Market: ${market}`)
-  console.log(`Average  Open, 200: ${n(sma(trimmedHistory, 200, 'open'), 5)}`)
-  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'open'), 5)}`)
-  console.log(`Average  High, 200: ${n(sma(trimmedHistory, 200, 'high'), 5)}`)
-  console.log(`Average  High, 100: ${n(sma(trimmedHistory, 100, 'high'), 5)}`)
-  console.log(`Average   Low, 200: ${n(sma(trimmedHistory, 200, 'low'), 5)}`)
-  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'low'), 5)}`)
-  console.log(`Average Close, 200: ${n(sma(trimmedHistory, 200, 'close'), 5)}`)
-  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'close'), 5)}`)
+  console.log(`SMA  Open, 200: ${n(sma(trimmedHistory, 200, 'open'), 5)}`)
+  console.log(`SMA  Open, 100: ${n(sma(trimmedHistory, 100, 'open'), 5)}`)
+  console.log(`EMA  Open, 200: ${n(ema(trimmedHistory, 200, 'open'), 5)}`)
+  console.log(`EMA  Open, 100: ${n(ema(trimmedHistory, 100, 'open'), 5)}`)
+  console.log(`SMA  High, 200: ${n(sma(trimmedHistory, 200, 'high'), 5)}`)
+  console.log(`SMA  High, 100: ${n(sma(trimmedHistory, 100, 'high'), 5)}`)
+  console.log(`EMA  High, 200: ${n(ema(trimmedHistory, 200, 'high'), 5)}`)
+  console.log(`EMA  High, 100: ${n(ema(trimmedHistory, 100, 'high'), 5)}`)
+  console.log(`SMA   Low, 200: ${n(sma(trimmedHistory, 200, 'low'), 5)}`)
+  console.log(`SMA  Open, 100: ${n(sma(trimmedHistory, 100, 'low'), 5)}`)
+  console.log(`EMA   Low, 200: ${n(ema(trimmedHistory, 200, 'low'), 5)}`)
+  console.log(`EMA  Open, 100: ${n(ema(trimmedHistory, 100, 'low'), 5)}`)
+  console.log(`SMA Close, 200: ${n(sma(trimmedHistory, 200, 'close'), 5)}`)
+  console.log(`SMA  Open, 100: ${n(sma(trimmedHistory, 100, 'close'), 5)}`)
+  console.log(`EMA Close, 200: ${n(ema(trimmedHistory, 200, 'close'), 5)}`)
+  console.log(`EMA  Open, 100: ${n(ema(trimmedHistory, 100, 'close'), 5)}`)
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
@@ -210,8 +218,20 @@ function sma(rawData, time, parameter) {
   if (time < data.length) {
     data = data.slice((time * -1))
   }
-
   return (data.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / data.length
+}
+
+function ema(rawData, time, parameter) {
+  let data = extractData(rawData, parameter)
+  const k = 2/(time + 1)
+  let emaData = []
+  emaData[0] = data[0]
+  for (let i = 1; i < data.length; i++) {
+    let newPoint = (data[i] * k) + (emaData[i-1] * (1-k))
+    emaData.push(newPoint)
+  }
+  let currentEma = [...emaData].pop()
+  return +currentEma.toFixed(2)
 }
 
 run();
