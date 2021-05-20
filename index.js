@@ -5,16 +5,14 @@ require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
 let lastPrice = 0;
-let boughtPrice = 0;
-let askingPrice;
 let rising
 let lastBuyTime = 0
 
 function run() {
 
   const config = {
-    asset: "DOGE",
-    base: "BUSD",
+    asset: "BTC",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -26,7 +24,6 @@ function run() {
     apiKey: process.env.API_KEY,
     secret: process.env.API_SECRET
   });
-  tick(binanceClient, config)
   setInterval(tick, config.tickInterval, binanceClient, config)
 }
 
@@ -54,13 +51,12 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(`Average  High: ${n(getAverage(trimmedHistory, 'high'), 5)}`)
   console.log(`Average   Low: ${n(getAverage(trimmedHistory, 'low'), 5)}`)
   console.log(`Average Close: ${n(getAverage(trimmedHistory, 'close'), 5)}`)
-
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log('\nOrders\n')
-  const ordersObject = presentOrders(orders, currentPrice)
+  const ordersObject = trimOrders(orders, currentPrice)
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
@@ -139,7 +135,7 @@ function n(n, d) {
   return Number.parseFloat(n).toFixed(d);
 }
 
-function presentOrders(orders, currentPrice) {
+function trimOrders(orders, currentPrice) {
   let returnArray = []
   let totalCurrentDollar = 0
   let totalProjectedDollar = 0
