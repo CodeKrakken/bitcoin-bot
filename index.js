@@ -47,10 +47,14 @@ async function tick(client, config) {
 function report(market, lastPrice, currentPrice, wallet, config, orders, dateObject, trimmedHistory) {
   console.log('\n\nNew Tick\n--------\n')
   console.log(`Market: ${market}`)
-  console.log(`Average  Open: ${n(getAverage(extractData(trimmedHistory, 'open')), 5)}`)
-  console.log(`Average  High: ${n(getAverage(extractData(trimmedHistory, 'high')), 5)}`)
-  console.log(`Average   Low: ${n(getAverage(extractData(trimmedHistory, 'low')), 5)}`)
-  console.log(`Average Close: ${n(getAverage(extractData(trimmedHistory, 'close')), 5)}`)
+  console.log(`Average  Open, 200: ${n(sma(trimmedHistory, 200, 'open'), 5)}`)
+  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'open'), 5)}`)
+  console.log(`Average  High, 200: ${n(sma(trimmedHistory, 200, 'high'), 5)}`)
+  console.log(`Average  High, 100: ${n(sma(trimmedHistory, 100, 'high'), 5)}`)
+  console.log(`Average   Low, 200: ${n(sma(trimmedHistory, 200, 'low'), 5)}`)
+  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'low'), 5)}`)
+  console.log(`Average Close, 200: ${n(sma(trimmedHistory, 200, 'close'), 5)}`)
+  console.log(`Average  Open, 100: ${n(sma(trimmedHistory, 100, 'close'), 5)}`)
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
@@ -201,15 +205,13 @@ function extractData(dataObject, key) {
   return array
 }
 
-function getAverage(dataArray) {
-  return (dataArray.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / dataArray.length
-}
-
 function sma(rawData, time, parameter) {
-  let data = extractData(dataRaw, parameter)
-  if (time >= data.length) {
-    return getAverage(data)
+  let data = extractData(rawData, parameter)
+  if (time < data.length) {
+    data = data.slice((time * -1))
   }
+
+  return (data.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / data.length
 }
 
 run();
