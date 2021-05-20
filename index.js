@@ -63,6 +63,7 @@ function report(market, lastPrice, currentPrice, wallet, config, orders, dateObj
   console.log(`SMA  Open, 100: ${n(sma(trimmedHistory, 100, 'close'), 5)}`)
   console.log(`EMA Close, 200: ${n(ema(trimmedHistory, 200, 'close'), 5)}`)
   console.log(`EMA  Open, 100: ${n(ema(trimmedHistory, 100, 'close'), 5)}`)
+  console.log(`Average True Range: ${n(atr(trimmedHistory), 5)}`)
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
@@ -232,6 +233,25 @@ function ema(rawData, time, parameter) {
   }
   let currentEma = [...emaData].pop()
   return +currentEma.toFixed(2)
+}
+
+function atr(rawData) {
+  let highs = extractData(rawData, 'high')
+  let lows = extractData(rawData, 'low')
+  let closes = extractData(rawData, 'close')
+  let trueRange  = []
+
+  for (let i = 1; i - 1 < rawData.length-1; i++) {
+    let tr1 = (highs[i]-lows[i])
+    let tr2 = Math.abs(highs[i] - closes[i])
+    let tr3 = Math.abs(closes[i-1] - lows[i])
+    trueRange.push(Math.max(tr1, tr2, tr3))
+  }
+
+  if (time < data.length) {
+    data = data.slice((time * -1))
+  }
+  return (data.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / time
 }
 
 run();
