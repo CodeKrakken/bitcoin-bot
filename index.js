@@ -11,8 +11,8 @@ let lastBuyTime = 0
 function run() {
 
   const config = {
-    asset: "BTC",
-    base: "USDT",
+    asset: "DOGE",
+    base: "BUSD",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
@@ -185,7 +185,7 @@ function trim(data) {
 function presentOrders(ordersObject) {
   let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
   ordersObject.orders.forEach(order => {
-    returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}     ${order.price}     ${order.currentDollar}      ${order.projectedDollar}\n\n`)
+    returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}        ${order.price}      ${order.currentDollar}      ${order.projectedDollar}\n\n`)
   })                                 
   returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
   returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
@@ -202,11 +202,14 @@ function extractData(dataObject, key) {
 }
 
 function getAverage(dataArray) {
-  let total = 0.0
-  dataArray.forEach(datum => {
-    total += datum
-  })
-  return total / dataArray.length
+  return (dataArray.reduce(( accumulator, currentValue ) => accumulator + currentValue, 0 )) / dataArray.length
+}
+
+function sma(rawData, time, parameter) {
+  let data = extractData(dataRaw, parameter)
+  if (time >= data.length) {
+    return getAverage(data)
+  }
 }
 
 run();
