@@ -47,16 +47,17 @@ async function tick(client, config) {
 function report(market, lastPrice, currentPrice, wallet, config, orders, dateObject, trimmedHistory) {
   console.log('\n\nNew Tick\n--------\n')
   console.log(`Market: ${market}`)
-  console.log(`Average  Open: ${n(getAverage(trimmedHistory, 'open'), 5)}`)
-  console.log(`Average  High: ${n(getAverage(trimmedHistory, 'high'), 5)}`)
-  console.log(`Average   Low: ${n(getAverage(trimmedHistory, 'low'), 5)}`)
-  console.log(`Average Close: ${n(getAverage(trimmedHistory, 'close'), 5)}`)
+  console.log(`Average  Open: ${n(getAverage(extractData(trimmedHistory, 'open')), 5)}`)
+  console.log(`Average  High: ${n(getAverage(extractData(trimmedHistory, 'high')), 5)}`)
+  console.log(`Average   Low: ${n(getAverage(extractData(trimmedHistory, 'low')), 5)}`)
+  console.log(`Average Close: ${n(getAverage(extractData(trimmedHistory, 'close')), 5)}`)
   console.log(`\n   Last Price: ${n(lastPrice, 5)}`)
   console.log(`Current Price: ${n(currentPrice, 5)}`)
   console.log(wallet.base > config.allocation ? `  Sec til buy: ${Math.floor((config.buyInterval - (dateObject.getTime() - lastBuyTime))/1000)}` : 'Awaiting funds.')
   console.log('\n' + comparePrices(lastPrice, currentPrice))
   console.log('\nOrders\n')
   const ordersObject = trimOrders(orders, currentPrice)
+  console.log(presentOrders(ordersObject))
   console.log(`\nWallet\n\n  ${n(wallet.base, 2)} ${config.base}\n+ ${n(wallet.asset, 2)} ${config.asset}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalCurrentDollar), 2)} ${config.base}\n= ${n((((wallet.base + wallet.asset) * currentPrice) + ordersObject[ordersObject.length-1].totalProjectedDollar), 2)} ${config.base}`)
 }
 
@@ -136,11 +137,13 @@ function n(n, d) {
 }
 
 function trimOrders(orders, currentPrice) {
-  let returnArray = []
+  let returnObject = {
+    orders: []
+  }
   let totalCurrentDollar = 0
   let totalProjectedDollar = 0
   orders.forEach(order => {
-    returnArray.push({
+    returnObject.orders.push({
       'side': order.side,
       'time': order.timestamp,
       'volume': order.amount,
@@ -151,11 +154,11 @@ function trimOrders(orders, currentPrice) {
     totalCurrentDollar += (order.amount * currentPrice)
     totalProjectedDollar += (order.amount * order.price)
   })
-  returnArray.push({
+  returnObject['totals'] = {
     'totalCurrentDollar': totalCurrentDollar,
     'totalProjectedDollar': totalProjectedDollar
-  })
-  return returnArray
+  }
+  return returnObject
 }
 
 function trim(data) {
@@ -179,12 +182,31 @@ function trim(data) {
   return dataObjectArray
 }
 
-function getAverage(data, parameter) {
-  let total = 0
-  data.forEach(datum => {
-    total += datum[parameter]
+function presentOrders(ordersObject) {
+  let returnArray = []
+  returnArray.push(`Side     Time               Volume     Price     Current $     Projected $`)
+  ordersObject.orders.forEach(order => {
+    returnArray.push(`${order.side}     ${order.time}     ${order.volume}     ${order.price}     ${order.currentDollar}     ${order.projectedDollar}`)
   })
-  return total / data.length
+  returnArray.push(ordersObject.totals.totalCurrentDollar)
+  returnArray.push(ordersObject.totals.totalProjectedDollar)
+  return returnArray
+}
+
+function extractData(dataObject, key) {
+  let array = []
+  dataObject.forEach(obj => {
+    array.push(obj[key])
+  })
+  return array
+}
+
+function getAverage(dataArray) {
+  let total = 0.0
+  dataArray.forEach(datum => {
+    total += datum
+  })
+  return total / dataArray.length
 }
 
 run();
