@@ -1,12 +1,11 @@
-// This strategy involves buying and selling $15 at a time. Many orders can be open at once.
-// It sets the sell order at the same time as it sets the buy order, therefore it cannot hold during a rise.
-
 require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
+const app = express()
 let lastPrice = 0;
 let rising
 let lastBuyTime = 0
+
 
 function run() {
 

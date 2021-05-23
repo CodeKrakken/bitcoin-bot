@@ -2,10 +2,10 @@
   "name": "bitcoin-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "Donald Newholm <newholm1@hotmail.com> (https://github.com/CodeKrakken.git)",
@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "ccxt": "^1.48.8",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
   }
 }
