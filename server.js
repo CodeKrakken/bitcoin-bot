@@ -1,11 +1,38 @@
 require('dotenv').config();
 const ccxt = require('ccxt');
 const axios = require('axios');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const morgan = require('morgan');
+const path = require('path');
 const app = express()
 let lastPrice = 0;
 let rising
 let lastBuyTime = 0
 
+app.use(morgan('tiny'));
+app.use(cors());
+app.use(express.static(__dirname));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// app.get('/tick', async(req, res) => {
+//   res.json({message: 'Behold the mighty MEVN stack!'})
+// })
+
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
+    console.log(`listening on ${port}`);
+});
+
+app.get('/tick', async(req, res) => {
+  try {
+    res.send('Hooray')
+  } catch (err) {
+    console.error(err.message)
+  }
+})
 
 function run() {
 
