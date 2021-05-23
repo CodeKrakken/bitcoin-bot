@@ -17,22 +17,10 @@ app.use(express.static(__dirname));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// app.get('/tick', async(req, res) => {
-//   res.json({message: 'Behold the mighty MEVN stack!'})
-// })
-
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
     console.log(`listening on ${port}`);
 });
-
-app.get('/tick', async(req, res) => {
-  try {
-    res.send('Hooray')
-  } catch (err) {
-    console.error(err.message)
-  }
-})
 
 function run() {
 
@@ -66,6 +54,13 @@ async function tick(client, config) {
   }
   let dateObject = new Date
   report(market, lastPrice, currentPrice, wallet, config, orders, dateObject, trimmedHistory)
+  app.get('/tick', async(req, res) => {
+    try {
+      res.send('Hooray')
+    } catch (err) {
+      console.error(err.message)
+    }
+  })
   trade(market, wallet, currentPrice, client, config, dateObject, orders)
   lastPrice = currentPrice
 }
