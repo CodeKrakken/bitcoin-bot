@@ -5,8 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
 const app = express()
-let counter = '0'
-
+const axios = require('axios')
 
 app.use(morgan('tiny'));
 app.use(cors());
@@ -21,10 +20,11 @@ app.listen(port, () => {
 
 app.get('/tick', async(req, res) => {
   try {
-    res.send(counter)
-    parseInt(counter)
-    counter ++
-    counter = counter.toString()
+    const tick = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=DOGEBUSD`)
+    res.send(tick.data)
+    // parseInt(counter)
+    // counter ++
+    // counter = counter.toString()
   } catch (err) {
     console.error(err.message)
   }
