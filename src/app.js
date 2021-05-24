@@ -10,15 +10,17 @@ $(document).ready(function(){
         Last Price : {{ lastPrice }} <br>
         Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
         {{ comparePrices(lastPrice, tick.currentPrice) }} <br>
-        Average True Range, 100 : {{ this.n(this.atr(this.trim(tick.priceHistory), 100), 5) }} <br>
-        Average True Range, 200 : {{ this.n(this.atr(this.trim(tick.priceHistory), 200), 5) }}
+        SMA  Open, 200 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
+        ATR, 100 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 100), 5) }} <br>
+        ATR, 200 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 200), 5) }}
       </div>
     `,
     data() {
       return {
         tick: {},
         timer: '',
-        lastPrice: 0
+        lastPrice: 0,
+        trimmedHistory: []
       }
     },
     created() {
@@ -27,11 +29,12 @@ $(document).ready(function(){
     methods: {
       newTick () {
         $.get("/tick")
-        .then(response => (this.updateDisplay(response)))
+        .then(response => (this.refreshData(response)))
       },
-      updateDisplay(newTick) {
+      refreshData(newTick) {
         this.lastPrice = this.n(this.tick.currentPrice, 5)
         this.tick = newTick
+        this.trimmedHistory = this.trim(newTick.priceHistory)
       },
       comparePrices(lastPrice, currentPrice) {
         let direction = '+'
@@ -94,6 +97,13 @@ $(document).ready(function(){
       },
       average(array) {
         return (array.reduce(( a, b ) => a + b, 0 )) / array.length
+      },
+      sma(rawData, time, parameter) {
+        let data = this.extractData(rawData, parameter)
+        if (time < data.length) {
+          data = data.slice((time * -1))
+        }
+        return this.average(data)
       }
     }
   })
