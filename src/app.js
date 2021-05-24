@@ -6,7 +6,8 @@ $(document).ready(function() {
     template: `
       <div>
         WALLET <br><br>
-        {{ wallet }}
+        {{ n(Object.values(wallet)[0], 2) }} {{ Object.keys(wallet)[0] }} <br>
+        {{ n(Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
       </div>
     `,
     data() {
@@ -22,7 +23,10 @@ $(document).ready(function() {
       },
       refreshData(wallet) {
         this.wallet = wallet
-      }
+      },
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
+      },
     },
     created() {
       this.timer = setInterval(this.getWallet(), 2000)

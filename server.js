@@ -45,10 +45,11 @@ app.get('/tick', async(req, res) => {
 app.get('/wallet', async(req, res) => {
   try {
     const balances = await binanceClient.fetchBalance()
-    const wallet = {
-      asset: balances.free[config.asset],
-      base: balances.free[config.base]
-    }    
+    const wallet = {}
+      // asset : balances.free[config.asset],
+      // base : balances.free[config.base]
+    wallet[config.asset] = balances.free[config.asset]
+    wallet[config.base] = balances.free[config.base]
     res.send(wallet)
   } catch (err) {
     console.log(err.message)
