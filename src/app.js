@@ -5,9 +5,28 @@ $(document).ready(function() {
   Vue.component('wallet', {
     template: `
       <div>
-        WALLET
+        WALLET <br><br>
+        {{ wallet }}
       </div>
-    `
+    `,
+    data() {
+      return {
+        wallet: {},
+        timer: ''
+      }
+    },
+    methods: {
+      getWallet() {
+      $.get("/wallet")
+        .then(response => (this.refreshData(response)))
+      },
+      refreshData(wallet) {
+        this.wallet = wallet
+      }
+    },
+    created() {
+      this.timer = setInterval(this.getWallet(), 2000)
+    },
   })
 
   Vue.component('orders', {

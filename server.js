@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -5,6 +6,15 @@ const morgan = require('morgan');
 const path = require('path');
 const app = express()
 const axios = require('axios')
+const ccxt = require('ccxt');
+const binanceClient = new ccxt.binance({
+  apiKey: process.env.API_KEY,
+  secret: process.env.API_SECRET
+});
+const config = {
+  base: 'BUSD',
+  asset: 'DOGE'
+}
 
 app.use(morgan('tiny'));
 app.use(cors());
@@ -29,5 +39,18 @@ app.get('/tick', async(req, res) => {
 
   } catch (err) {
     console.error(err.message)
+  }
+})
+
+app.get('/wallet', async(req, res) => {
+  try {
+    const balances = await binanceClient.fetchBalance()
+    const wallet = {
+      asset: balances.free[config.asset],
+      base: balances.free[config.base]
+    }    
+    res.send(wallet)
+  } catch (err) {
+    console.log(err.message)
   }
 })
