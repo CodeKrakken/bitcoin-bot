@@ -9,8 +9,9 @@ $(document).ready(function(){
         Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
         Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
-        {{ comparePrices(lastPrice, tick.currentPrice) }}
-        </div>
+        {{ comparePrices(lastPrice, tick.currentPrice) }} <br>
+        Average True Range : {{ this.n(atr(trimmedHistory)), 5 }}
+      </div>
     `,
     data() {
       return {
