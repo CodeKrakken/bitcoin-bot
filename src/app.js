@@ -12,12 +12,18 @@ $(document).ready(function(){
     `,
     data() {
       return {
-        tick: {}
+        tick: {},
+        timer: ''
       }
     },
-    mounted() {
-      $.get("/tick")
-      .then(response => (this.tick = response))
+    created() {
+      this.timer = setInterval(this.newTick, 2000)
+    },
+    methods: {
+      newTick() {
+        $.get("/tick")
+        .then(response => (this.tick = response)).bind(this)
+      }
     }
   })
 })
