@@ -2,15 +2,18 @@ Vue.config.devtools = true
 
 $(document).ready(function(){
 
-  var app = new Vue({
-    el: '#app',
+  Vue.component ('readout', {
     template: `
       <div>
         Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
         Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
         {{ comparePrices(lastPrice, tick.currentPrice) }} <br>
+        SMA  Open, 100 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
         SMA  Open, 200 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
+        EMA  Open, 100 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
+        EMA  Open, 200 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
+        EMA  High, 200 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 200, 'high'), 5) }} <br>
         ATR, 100 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 100), 5) }} <br>
         ATR, 200 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 200), 5) }}
       </div>
@@ -18,8 +21,26 @@ $(document).ready(function(){
     data() {
       return {
         tick: {},
-        timer: '',
         lastPrice: 0,
+      }
+    },
+    methods: {
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
+      },
+    }
+  })
+
+  var app = new Vue({
+    el: '#app',
+    template: `
+      <div>
+        <readout />
+      </div>
+    `,
+    data() {
+      return {
+        timer: '',
         trimmedHistory: []
       }
     },
@@ -104,6 +125,18 @@ $(document).ready(function(){
           data = data.slice((time * -1))
         }
         return this.average(data)
+      },
+      ema(rawData, time, parameter) {
+        let data = this.extractData(rawData, parameter)
+        const k = 2/(time + 1)
+        let emaData = []
+        emaData[0] = data[0]
+        for (let i = 1; i < data.length; i++) {
+          let newPoint = (data[i] * k) + (emaData[i-1] * (1-k))
+          emaData.push(newPoint)
+        }
+        let currentEma = [...emaData].pop()
+        return +currentEma.toFixed(2)
       }
     }
   })
