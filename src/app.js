@@ -6,7 +6,8 @@ $(document).ready(function(){
     el: '#app',
     template: `
       <div>
-        &nbsp &nbsp &nbsp Symbol : {{ tick.symbol }}<br>
+        &nbsp &nbsp &nbsp Symbol : {{ tick.symbol }} <br>
+        Last Price : {{ lastPrice }} <br>
         Current Price : {{ tick.currentPrice }}
         {{ tick.rawCurrentPrice }}
       </div>
@@ -14,7 +15,8 @@ $(document).ready(function(){
     data() {
       return {
         tick: {},
-        timer: ''
+        timer: '',
+        lastPrice: 0
       }
     },
     created() {
@@ -22,8 +24,10 @@ $(document).ready(function(){
     },
     methods: {
       newTick() {
+        lastPrice = this.tick.currentPrice || 0
+        // console.log(this.tick.currentPrice)
         $.get("/tick")
-        .then(response => (this.tick = response)).bind(this)
+        .then(response => (this.tick = response))
       }
     }
   })
