@@ -8,8 +8,9 @@ $(document).ready(function(){
       <div>
         Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
-        Current Price : {{ tick.currentPrice }}
-      </div>
+        Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
+        {{ comparePrices(lastPrice, tick.currentPrice) }}
+        </div>
     `,
     data() {
       return {
@@ -27,8 +28,22 @@ $(document).ready(function(){
         .then(response => (this.updateDisplay(response)))
       },
       updateDisplay(newTick) {
-        this.lastPrice = this.tick.currentPrice
+        this.lastPrice = this.n(this.tick.currentPrice, 5)
         this.tick = newTick
+      },
+      comparePrices(lastPrice, currentPrice) {
+        let direction = '+'
+        if(lastPrice < currentPrice) {
+          rising = true
+        } else if (lastPrice > currentPrice) {
+          direction = '-'
+          rising = false
+        }
+        const percentage = Math.abs(lastPrice - currentPrice)/lastPrice*100
+        return direction + ' ' + this.n(percentage, 5) + '%'
+      },
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
       }
     }
   })
