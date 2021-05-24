@@ -22,7 +22,8 @@ app.get('/tick', async(req, res) => {
     const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=DOGEBUSD`)
     const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=DOGEBUSD&interval=1h`)
     res.send({
-      currentPrice: currentPrice.data,
+      symbol: currentPrice.data.symbol,
+      currentPrice: currentPrice.data.price,
       priceHistory: priceHistory.data
     })
     // parseInt(counter)

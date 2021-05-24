@@ -6,8 +6,9 @@ $(document).ready(function(){
     el: '#app',
     template: `
       <div>
-        {{ tick }}
-
+        &nbsp &nbsp &nbsp Symbol : {{ tick.symbol }}<br>
+        Current Price : {{ tick.currentPrice }}
+        {{ tick.rawCurrentPrice }}
       </div>
     `,
     data() {
