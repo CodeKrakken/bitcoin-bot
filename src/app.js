@@ -22,24 +22,6 @@ $(document).ready(function(){
       return {
         tick: {},
         lastPrice: 0,
-      }
-    },
-    methods: {
-      n(n, d) {
-        return Number.parseFloat(n).toFixed(d);
-      },
-    }
-  })
-
-  var app = new Vue({
-    el: '#app',
-    template: `
-      <div>
-        <readout />
-      </div>
-    `,
-    data() {
-      return {
         timer: '',
         trimmedHistory: []
       }
@@ -48,15 +30,6 @@ $(document).ready(function(){
       this.timer = setInterval(this.newTick, 2000)
     },
     methods: {
-      newTick () {
-        $.get("/tick")
-        .then(response => (this.refreshData(response)))
-      },
-      refreshData(newTick) {
-        this.lastPrice = this.n(this.tick.currentPrice, 5)
-        this.tick = newTick
-        this.trimmedHistory = this.trim(newTick.priceHistory)
-      },
       comparePrices(lastPrice, currentPrice) {
         let direction = '+'
         if(lastPrice < currentPrice) {
@@ -67,27 +40,6 @@ $(document).ready(function(){
         }
         const percentage = Math.abs(lastPrice - currentPrice)/lastPrice*100
         return direction + ' ' + this.n(percentage, 5) + '%'
-      },
-      n(n, d) {
-        return Number.parseFloat(n).toFixed(d);
-      },
-      atr(data, time) {
-        let highs = this.extractData(data, 'high')
-        let lows = this.extractData(data, 'low')
-        let closes = this.extractData(data, 'close')
-        let trueRange  = []
-      
-        for (let i = 1; i - 1 < data.length-1; i++) {
-          let tr1 = (highs[i]-lows[i])
-          let tr2 = Math.abs(highs[i] - closes[i])
-          let tr3 = Math.abs(closes[i-1] - lows[i])
-          trueRange.push(Math.max(tr1, tr2, tr3))
-        }
-      
-        if (time < trueRange.length) {
-          trueRange = trueRange.slice((time * -1))
-        }
-        return this.average(trueRange)
       },
       trim(data) {
         let dataObjectArray = []
@@ -109,6 +61,38 @@ $(document).ready(function(){
         })
         return dataObjectArray
       },
+      newTick () {
+        $.get("/tick")
+        .then(response => (this.refreshData(response)))
+      },
+      refreshData(newTick) {
+        this.lastPrice = this.n(this.tick.currentPrice, 5)
+        this.tick = newTick
+        this.trimmedHistory = this.trim(newTick.priceHistory)
+      },
+      
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
+      },
+      atr(data, time) {
+        let highs = this.extractData(data, 'high')
+        let lows = this.extractData(data, 'low')
+        let closes = this.extractData(data, 'close')
+        let trueRange  = []
+      
+        for (let i = 1; i - 1 < data.length-1; i++) {
+          let tr1 = (highs[i]-lows[i])
+          let tr2 = Math.abs(highs[i] - closes[i])
+          let tr3 = Math.abs(closes[i-1] - lows[i])
+          trueRange.push(Math.max(tr1, tr2, tr3))
+        }
+      
+        if (time < trueRange.length) {
+          trueRange = trueRange.slice((time * -1))
+        }
+        return this.average(trueRange)
+      },
+      
       extractData(dataObject, key) {
         let array = []
         dataObject.forEach(obj => {
@@ -139,5 +123,14 @@ $(document).ready(function(){
         return +currentEma.toFixed(2)
       }
     }
+  })
+
+  var app = new Vue({
+    el: '#app',
+    template: `
+      <div>
+        <readout />
+      </div>
+    `
   })
 })
