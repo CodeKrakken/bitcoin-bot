@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -20,8 +19,12 @@ app.listen(port, () => {
 
 app.get('/tick', async(req, res) => {
   try {
-    const tick = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=DOGEBUSD`)
-    res.send(tick.data)
+    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=DOGEBUSD`)
+    const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=DOGEBUSD&interval=1h`)
+    res.send({
+      currentPrice: currentPrice.data,
+      priceHistory: priceHistory.data
+    })
     // parseInt(counter)
     // counter ++
     // counter = counter.toString()
