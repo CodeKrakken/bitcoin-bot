@@ -1,10 +1,27 @@
 Vue.config.devtools = true
 
-$(document).ready(function(){
-
-  Vue.component ('readout', {
+$(document).ready(function() {
+  
+  Vue.component('wallet', {
     template: `
       <div>
+        WALLET
+      </div>
+    `
+  })
+
+  Vue.component('orders', {
+    template: `
+      <div>
+        ORDERS
+      </div>
+    `
+  })
+
+  Vue.component ('market', {
+    template: `
+      <div>
+        MARKET <br><br>
         Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
         Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
@@ -128,8 +145,10 @@ $(document).ready(function(){
   var app = new Vue({
     el: '#app',
     template: `
-      <div>
-        <readout />
+      <div id="app">
+        <wallet />
+        <orders />
+        <market />
       </div>
     `
   })

@@ -10,3 +10,10 @@ body {
   font-size: 100%;
   text-align: center
 }
+
+#app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 1vw;
+  width: 100%
+}
