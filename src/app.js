@@ -6,10 +6,9 @@ $(document).ready(function(){
     el: '#app',
     template: `
       <div>
-        &nbsp &nbsp &nbsp Symbol : {{ tick.symbol }} <br>
+        Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
         Current Price : {{ tick.currentPrice }}
-        {{ tick.rawCurrentPrice }}
       </div>
     `,
     data() {
@@ -24,9 +23,12 @@ $(document).ready(function(){
     },
     methods: {
       newTick () {
-        this.lastPrice = this.tick.currentPrice
         $.get("/tick")
-        .then(response => (this.tick = response))
+        .then(response => (this.updateDisplay(response)))
+      },
+      updateDisplay(newTick) {
+        this.lastPrice = this.tick.currentPrice
+        this.tick = newTick
       }
     }
   })
