@@ -26,9 +26,7 @@ app.get('/tick', async(req, res) => {
       currentPrice: currentPrice.data.price,
       priceHistory: priceHistory.data
     })
-    // parseInt(counter)
-    // counter ++
-    // counter = counter.toString()
+
   } catch (err) {
     console.error(err.message)
   }

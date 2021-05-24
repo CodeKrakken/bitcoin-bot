@@ -23,9 +23,8 @@ $(document).ready(function(){
       this.timer = setInterval(this.newTick, 2000)
     },
     methods: {
-      newTick() {
-        lastPrice = this.tick.currentPrice || 0
-        // console.log(this.tick.currentPrice)
+      newTick () {
+        this.lastPrice = this.tick.currentPrice
         $.get("/tick")
         .then(response => (this.tick = response))
       }
