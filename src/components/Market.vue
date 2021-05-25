@@ -66,10 +66,11 @@
         $.get("/tick")
         .then(response => (this.refreshData(response)))
       },
-      refreshData(newTick) {
+      refreshData(newData) {
+        console.log(newData)
         this.lastPrice = this.n(this.tick.currentPrice, 5)
-        this.tick = newTick
-        this.trimmedHistory = this.trim(newTick.priceHistory)
+        this.tick = newData
+        this.trimmedHistory = this.trim(newData.priceHistory)
       },
       
       n(n, d) {

@@ -19,7 +19,7 @@ import $ from 'jquery'
     },
     methods: {
       getWallet() {
-        $.get("/wallet")
+        $.get("../server.js/wallet")
         .then(response => (this.refreshData(response)))
       },
       refreshData(wallet) {
