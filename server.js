@@ -15,6 +15,8 @@ const config = {
   base: 'BUSD',
   asset: 'DOGE'
 }
+const market = `${config.asset}/${config.base}`
+const symbol = `${config.asset}${config.base}`
 
 app.use(morgan('tiny'));
 app.use(cors());
@@ -29,8 +31,8 @@ app.listen(port, () => {
 
 app.get('/tick', async(req, res) => {
   try {
-    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=DOGEBUSD`)
-    const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=DOGEBUSD&interval=1h`)
+    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+    const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
     res.send({
       symbol: currentPrice.data.symbol,
       currentPrice: currentPrice.data.price,
@@ -45,14 +47,13 @@ app.get('/tick', async(req, res) => {
 app.get('/wallet', async(req, res) => {
   try {
     const balances = await binanceClient.fetchBalance()
-    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${config.asset}${config.base}`)
+    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
     const wallet = {}
       // asset : balances.free[config.asset],
       // base : balances.free[config.base]
     wallet[config.asset] = balances.free[config.asset]
     wallet[config.base] = balances.free[config.base]
     wallet['current price'] = currentPrice.data.price
-    console.log(wallet)
     res.send(wallet)
   } catch (err) {
     console.log(err.message)
@@ -62,7 +63,8 @@ app.get('/wallet', async(req, res) => {
 app.get('/orders', async(req, res) => {
   try {
     const orders = await client.fetchOpenOrders(market);
-    res.send(orders[0].data.price)
+    console.log(orders)
+    res.send(orders)
   } catch (err) {
     console.log(err.message)
   }
@@ -71,7 +73,16 @@ app.get('/orders', async(req, res) => {
 app.get('/currentPrice', async(req, res) => {
   try {
     const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${config.asset}${config.base}`)
+    res.send(currentPrice)
+  } catch (error) {
+    console.log(error.message)
+  }
+})
 
+app.get('/', async(req, res) => {
+  try {
+    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+    console.log(currentPrice)
   } catch (error) {
     console.log(error.message)
   }

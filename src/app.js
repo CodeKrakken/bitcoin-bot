@@ -54,11 +54,11 @@ $(document).ready(function() {
     },
     methods: {
       getData() {
-        console.log(this.orders)
         $.get("/orders")
         .then(response => (this.refreshData(response)))
       },
       refreshData(orders) {
+        console.log(orders)
         this.orders = this.trimOrders(orders, this.props.currentPrice)
       },
       n(n, d) {
@@ -239,16 +239,21 @@ $(document).ready(function() {
     `,
     data() {
       return {
+        timer: '',
         currentPrice: 0
       }
     },
     created() {
-      setInterval(this.getCurrentPrice(), 2000)
+      this.timer = setInterval(this.getData(), 2000)
     },
     methods: {
-      getCurrentPrice() {
-        $.get("/currentPrice")
-        .then(response => (this.currentPrice = response))
+      getData() {
+        $.get("/")
+        .then(response => (this.parseData(response)))
+      },
+      parseData(data) {
+        this.currentPrice = data.currentPrice
+        console.log(this.currentPrice)
       }
     }
   })
