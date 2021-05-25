@@ -6,9 +6,10 @@ $(document).ready(function() {
     template: `
       <div>
         WALLET <br><br>
-        {{ n(Object.values(wallet)[0], 2) }} {{ Object.keys(wallet)[0] }} <br>
-        {{ n(Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
-      </div>
+        &nbsp {{ n(Object.values(wallet)[0], 2) }} {{ Object.keys(wallet)[0] }} <br>
+        + {{ n(Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
+        = {{ n((Object.values(wallet)[0] * wallet['current price'] ) + Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
+        </div>
     `,
     data() {
       return {
@@ -17,8 +18,8 @@ $(document).ready(function() {
       }
     },
     methods: {
-      getWallet() {
-      $.get("/wallet")
+      getData() {
+        $.get("/wallet")
         .then(response => (this.refreshData(response)))
       },
       refreshData(wallet) {
@@ -29,7 +30,7 @@ $(document).ready(function() {
       },
     },
     created() {
-      this.timer = setInterval(this.getWallet(), 2000)
+      this.timer = setInterval(this.getData(), 2000)
     },
   })
 
