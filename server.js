@@ -79,10 +79,14 @@ app.get('/currentPrice', async(req, res) => {
   }
 })
 
-app.get('/', async(req, res) => {
+app.get('/data', async(req, res) => {
   try {
-    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
-    console.log(currentPrice)
+    const results = await Promise.all([
+      axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+    ]);
+    const dataObject = {}
+    dataObject.currentPrice = results[0].data.price
+    res.send(dataObject)
   } catch (error) {
     console.log(error.message)
   }

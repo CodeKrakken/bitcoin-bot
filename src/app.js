@@ -248,7 +248,7 @@ $(document).ready(function() {
     },
     methods: {
       getData() {
-        $.get("/")
+        $.get("/data")
         .then(response => (this.parseData(response)))
       },
       parseData(data) {
