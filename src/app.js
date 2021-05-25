@@ -37,9 +37,70 @@ $(document).ready(function() {
   Vue.component('orders', {
     template: `
       <div>
-        ORDERS
+        ORDERS <br><br>
+        {{ presentOrders(orders) }}
       </div>
-    `
+    `,
+    props: {
+      currentPrice: {
+        type: Number
+      }
+    },
+    data() {
+      return {
+        orders: {},
+        timer: ''
+      }
+    },
+    methods: {
+      getData() {
+        $.get("/orders")
+        .then(response => (this.refreshData(response)))
+      },
+      refreshData(orders) {
+        this.orders = trimOrders(orders, this.props.currentPrice)
+      },
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
+      },
+      trimOrders(orders, currentPrice) {
+        let returnObject = {
+          orders: []
+        }
+        let totalCurrentDollar = 0
+        let totalProjectedDollar = 0
+        orders.forEach(order => {
+          returnObject.orders.push({
+            'side': order.side,
+            'time': order.timestamp,
+            'volume': order.amount,
+            'price': order.price,
+            'currentDollar': n((order.amount * currentPrice), 2),
+            'projectedDollar': n((order.amount * order.price), 2)
+          })
+          totalCurrentDollar += (order.amount * currentPrice)
+          totalProjectedDollar += (order.amount * order.price)
+        })
+        returnObject['totals'] = {
+          'totalCurrentDollar': totalCurrentDollar,
+          'totalProjectedDollar': totalProjectedDollar
+        }
+        return returnObject
+      },
+      presentOrders(ordersObject) {
+        let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
+        ordersObject.orders.forEach(order => {
+          returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}        ${order.price}      ${order.currentDollar}      ${order.projectedDollar}\n\n`)
+        })                                 
+        returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
+        returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
+        
+        return returnString
+      }
+    },
+    created() {
+      this.timer = setInterval(this.getData(), 2000)
+    },
   })
 
   Vue.component ('market', {
@@ -171,9 +232,23 @@ $(document).ready(function() {
     template: `
       <div id="app">
         <wallet />
-        <orders />
+        <orders :currentPrice="currentPrice" />
         <market />
       </div>
-    `
+    `,
+    data() {
+      return {
+        currentPrice: 0
+      }
+    },
+    created() {
+      setInterval(getCurrentPrice(), 2000)
+    },
+    methods: {
+      getCurrentPrice() {
+        $.get("/currentPrice")
+        .then(response => (this.currentPrice = response))
+      }
+    }
   })
 })

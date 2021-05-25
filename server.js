@@ -58,3 +58,21 @@ app.get('/wallet', async(req, res) => {
     console.log(err.message)
   }
 })
+
+app.get('/orders', async(req, res) => {
+  try {
+    const orders = await client.fetchOpenOrders(market);
+    res.send(orders[0].data.price)
+  } catch (err) {
+    console.log(err.message)
+  }
+})
+
+app.get('/currentPrice', async(req, res) => {
+  try {
+    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${config.asset}${config.base}`)
+
+  } catch (error) {
+    console.log(error.message)
+  }
+})
