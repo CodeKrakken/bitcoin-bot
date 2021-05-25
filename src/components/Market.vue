@@ -18,6 +18,8 @@
 <script>
 
   import $ from 'jquery'
+  import axios from 'axios'
+
   export default {
     data() {
       return {
@@ -63,7 +65,7 @@
         return dataObjectArray
       },
       newTick () {
-        $.get("/tick")
+        axios.get("https://localhost:4000/")
         .then(response => (this.refreshData(response)))
       },
       refreshData(newData) {
