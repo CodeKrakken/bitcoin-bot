@@ -3,12 +3,15 @@ Vue.config.devtools = true
 $(document).ready(function() {
   
   Vue.component('wallet', {
+    props: {
+      currentPrice: Number
+    },
     template: `
       <div>
         WALLET <br><br>
         &nbsp {{ n(Object.values(wallet)[0], 2) }} {{ Object.keys(wallet)[0] }} <br>
         + {{ n(Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
-        = {{ n((Object.values(wallet)[0] * wallet['current price'] ) + Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
+        = {{ n((Object.values(wallet)[0] * currentPrice ) + Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
         </div>
     `,
     data() {
@@ -31,7 +34,7 @@ $(document).ready(function() {
     },
     created() {
       this.timer = setInterval(this.getData(), 2000)
-    },
+    }
   })
 
   Vue.component('orders', {
@@ -232,7 +235,7 @@ $(document).ready(function() {
     el: '#app',
     template: `
       <div id="app">
-        <wallet />
+        <wallet :currentPrice="currentPrice" />
         <orders :currentPrice="currentPrice" />
         <market />
       </div>
