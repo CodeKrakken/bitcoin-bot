@@ -113,8 +113,8 @@ $(document).ready(function() {
         MARKET <br><br>
         Symbol : {{ tick.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
-        Current Price : {{ this.n(tick.currentPrice, 5) }} <br>
-        {{ comparePrices(lastPrice, tick.currentPrice) }} <br>
+        Current Price : {{ this.n(currentPrice, 5) }} <br>
+        {{ comparePrices(lastPrice, currentPrice) }} <br>
         SMA  Open, 100 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
         SMA  Open, 200 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
         EMA  Open, 100 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
@@ -124,6 +124,11 @@ $(document).ready(function() {
         ATR, 200 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 200), 5) }}
       </div>
     `,
+    props: {
+      currentPrice: {
+        type: Number
+      }
+    },
     data() {
       return {
         tick: {},
@@ -237,7 +242,7 @@ $(document).ready(function() {
       <div id="app">
         <wallet :currentPrice="currentPrice" />
         <orders :currentPrice="currentPrice" />
-        <market />
+        <market :currentPrice="currentPrice" />
       </div>
     `,
     data() {
