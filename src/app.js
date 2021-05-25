@@ -54,11 +54,12 @@ $(document).ready(function() {
     },
     methods: {
       getData() {
+        console.log(this.orders)
         $.get("/orders")
         .then(response => (this.refreshData(response)))
       },
       refreshData(orders) {
-        this.orders = trimOrders(orders, this.props.currentPrice)
+        this.orders = this.trimOrders(orders, this.props.currentPrice)
       },
       n(n, d) {
         return Number.parseFloat(n).toFixed(d);
@@ -242,7 +243,7 @@ $(document).ready(function() {
       }
     },
     created() {
-      setInterval(getCurrentPrice(), 2000)
+      setInterval(this.getCurrentPrice(), 2000)
     },
     methods: {
       getCurrentPrice() {
