@@ -29,15 +29,15 @@ app.listen(port, () => {
     console.log(`listening on ${port}`);
 });
 
-// app.get('/orders', async(req, res) => {
-//   try {
-//     const orders = await client.fetchOpenOrders(market);
-//     console.log(orders)
-//     res.send(orders)
-//   } catch (err) {
-//     console.log(err.message)
-//   }
-// })
+app.get('/orders', async(req, res) => {
+  try {
+    const orders = await client.fetchOpenOrders(market);
+    console.log(orders)
+    res.send(orders)
+  } catch (err) {
+    console.log(err.message)
+  }
+})
 
 app.get('/tick', async(req, res) => {
   try {
@@ -47,11 +47,14 @@ app.get('/tick', async(req, res) => {
     const currentPriceRaw = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
     const priceHistoryRaw = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
     const balancesRaw = await binanceClient.fetchBalance()
+    const ordersRaw = await binanceClient.fetchOpenOrders(market);
+    console.log(ordersRaw)
     dataObject.currentPriceObject = currentPriceRaw.data
     dataObject.priceHistoryArray = priceHistoryRaw.data
     wallet[config.asset] = balancesRaw.free[config.asset]
     wallet[config.base] = balancesRaw.free[config.base]
     dataObject.wallet = wallet
+    dataObject.orders = ordersRaw
     res.send(dataObject)
   } catch (error) {
     console.log(error.message)
