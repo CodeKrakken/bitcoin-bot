@@ -4,7 +4,12 @@ $(document).ready(function() {
   
   Vue.component('wallet', {
     props: {
-      currentPrice: Number
+      wallet: {
+        type: Object
+      },
+      currentPrice: {
+        type: Number
+      }
     },
     template: `
       <div>
@@ -12,29 +17,13 @@ $(document).ready(function() {
         &nbsp {{ n(Object.values(wallet)[0], 2) }} {{ Object.keys(wallet)[0] }} <br>
         + {{ n(Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
         = {{ n((Object.values(wallet)[0] * currentPrice ) + Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
-        </div>
+      </div>
     `,
-    data() {
-      return {
-        wallet: {},
-        timer: ''
-      }
-    },
     methods: {
-      getData() {
-        $.get("/wallet")
-        .then(response => (this.refreshData(response)))
-      },
-      refreshData(wallet) {
-        this.wallet = wallet
-      },
       n(n, d) {
         return Number.parseFloat(n).toFixed(d);
       },
     },
-    created() {
-      this.timer = setInterval(this.getData(), 2000)
-    }
   })
 
   Vue.component('orders', {
@@ -61,7 +50,6 @@ $(document).ready(function() {
         .then(response => (this.refreshData(response)))
       },
       refreshData(orders) {
-        console.log(orders)
         this.orders = this.trimOrders(orders, this.props.currentPrice)
       },
       n(n, d) {
@@ -127,19 +115,21 @@ $(document).ready(function() {
     props: {
       currentPrice: {
         type: Number
+      },
+      tick: {
+        type: Object
       }
     },
     data() {
       return {
-        tick: {},
         lastPrice: 0,
-        timer: '',
+        // timer: '',
         trimmedHistory: []
       }
     },
-    created() {
-      this.timer = setInterval(this.newTick, 2000)
-    },
+    // created() {
+    //   this.timer = setInterval(this.newTick, 2000)
+    // },
     methods: {
       comparePrices(lastPrice, currentPrice) {
         let direction = '+'
@@ -172,10 +162,10 @@ $(document).ready(function() {
         })
         return dataObjectArray
       },
-      newTick () {
-        $.get("/tick")
-        .then(response => (this.refreshData(response)))
-      },
+      // newTick () {
+      //   $.get("/tick")
+      //   .then(response => (this.refreshData(response)))
+      // },
       refreshData(newTick) {
         this.lastPrice = this.n(this.tick.currentPrice, 5)
         this.tick = newTick
@@ -240,15 +230,16 @@ $(document).ready(function() {
     el: '#app',
     template: `
       <div id="app">
-        <wallet :currentPrice="currentPrice" />
-        <orders :currentPrice="currentPrice" />
-        <market :currentPrice="currentPrice" />
+        <wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
+        <orders :currentPrice="data.currentPrice" />
+        <market :tick="data.tick" />
       </div>
     `,
     data() {
       return {
         timer: '',
-        currentPrice: 0
+        currentPrice: 0,
+        data: {}
       }
     },
     created() {
@@ -260,8 +251,8 @@ $(document).ready(function() {
         .then(response => (this.parseData(response)))
       },
       parseData(data) {
-        this.currentPrice = data.currentPrice
-        console.log(this.currentPrice)
+        this.data = data
+        console.log(data.currentPriceObject)
       }
     }
   })

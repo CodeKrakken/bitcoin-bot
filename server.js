@@ -58,15 +58,15 @@ app.get('/wallet', async(req, res) => {
   }
 })
 
-app.get('/orders', async(req, res) => {
-  try {
-    const orders = await client.fetchOpenOrders(market);
-    console.log(orders)
-    res.send(orders)
-  } catch (err) {
-    console.log(err.message)
-  }
-})
+// app.get('/orders', async(req, res) => {
+//   try {
+//     const orders = await client.fetchOpenOrders(market);
+//     console.log(orders)
+//     res.send(orders)
+//   } catch (err) {
+//     console.log(err.message)
+//   }
+// })
 
 app.get('/currentPrice', async(req, res) => {
   try {
@@ -79,11 +79,17 @@ app.get('/currentPrice', async(req, res) => {
 
 app.get('/data', async(req, res) => {
   try {
-    const results = await Promise.all([
-      axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
-    ]);
+    console.log('getting data')
     const dataObject = {}
-    dataObject.currentPrice = results[0].data.price
+    const wallet = {}
+    const currentPriceRaw = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+    const priceHistoryRaw = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
+    const balancesRaw = await binanceClient.fetchBalance()
+    dataObject.currentPriceObject = currentPriceRaw.data
+    dataObject.priceHistoryArray = priceHistoryRaw.data
+    wallet[config.asset] = balancesRaw.free[config.asset]
+    wallet[config.base] = balancesRaw.free[config.base]
+    dataObject.wallet = wallet
     res.send(dataObject)
   } catch (error) {
     console.log(error.message)
