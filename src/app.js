@@ -107,7 +107,7 @@ $(document).ready(function() {
       <div>
         MARKET <br><br>
         Symbol : {{ currentPriceObject.symbol }} <br>
-        Last Price : {{ lastPrice }} <br>
+        Last Price : {{ n(lastPrice, 5) }} <br>
         Current Price : {{ this.n(currentPriceObject.price, 5) }} <br>
         {{ comparePrices(lastPrice, currentPriceObject.price) }} <br>
         SMA  Open, 100 : {{ this.n(this.sma(this.trim(priceHistory), 100, 'open'), 5) }} <br>
@@ -125,18 +125,11 @@ $(document).ready(function() {
       },
       priceHistory: {
         type: Array
+      },
+      lastPrice: {
+        type: Number
       }
     },
-    data() {
-      return {
-        lastPrice: 0,
-        // timer: '',
-        trimmedHistory: []
-      }
-    },
-    // created() {
-    //   this.timer = setInterval(this.newTick, 2000)
-    // },
     methods: {
       comparePrices(lastPrice, currentPrice) {
         let direction = '+'
@@ -169,14 +162,10 @@ $(document).ready(function() {
         })
         return dataObjectArray
       },
-      // newTick () {
-      //   $.get("/tick")
-      //   .then(response => (this.refreshData(response)))
-      // },
+
       refreshData(newTick) {
-        this.lastPrice = this.n(this.tick.currentPrice, 5)
+        
         this.tick = newTick
-        this.trimmedHistory = this.trim(newTick.priceHistory)
       },
       
       n(n, d) {
@@ -239,14 +228,15 @@ $(document).ready(function() {
       <div id="app">
         <wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
 
-        <market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" />
+        <market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
       </div>
     `,
     data() {
       return {
         timer: '',
-        currentPrice: 0,
-        data: {}
+        data: {},
+        lastPrice: 0,
+        firstRun: true
       }
     },
     created() {
@@ -258,8 +248,11 @@ $(document).ready(function() {
         .then(response => (this.refreshData(response)))
       },
       refreshData(data) {
+        if (!this.firstRun) {
+          this.lastPrice = this.data.currentPriceObject.price
+        }
         this.data = data
-        console.log(data.priceHistoryArray)
+        this.firstRun = false
       }
     }
   })
