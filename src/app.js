@@ -26,98 +26,105 @@ $(document).ready(function() {
     },
   })
 
-  Vue.component('orders', {
-    template: `
-      <div>
-        ORDERS <br><br>
-        {{ presentOrders(orders) }}
-      </div>
-    `,
-    props: {
-      currentPrice: {
-        type: Number
-      }
-    },
-    data() {
-      return {
-        orders: {},
-        timer: ''
-      }
-    },
-    methods: {
-      getData() {
-        $.get("/orders")
-        .then(response => (this.refreshData(response)))
-      },
-      refreshData(orders) {
-        this.orders = this.trimOrders(orders, this.props.currentPrice)
-      },
-      n(n, d) {
-        return Number.parseFloat(n).toFixed(d);
-      },
-      trimOrders(orders, currentPrice) {
-        let returnObject = {
-          orders: []
-        }
-        let totalCurrentDollar = 0
-        let totalProjectedDollar = 0
-        orders.forEach(order => {
-          returnObject.orders.push({
-            'side': order.side,
-            'time': order.timestamp,
-            'volume': order.amount,
-            'price': order.price,
-            'currentDollar': n((order.amount * currentPrice), 2),
-            'projectedDollar': n((order.amount * order.price), 2)
-          })
-          totalCurrentDollar += (order.amount * currentPrice)
-          totalProjectedDollar += (order.amount * order.price)
-        })
-        returnObject['totals'] = {
-          'totalCurrentDollar': totalCurrentDollar,
-          'totalProjectedDollar': totalProjectedDollar
-        }
-        return returnObject
-      },
-      presentOrders(ordersObject) {
-        let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
-        ordersObject.orders.forEach(order => {
-          returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}        ${order.price}      ${order.currentDollar}      ${order.projectedDollar}\n\n`)
-        })                                 
-        returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
-        returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
+  // Vue.component('orders', {
+  //   template: `
+  //     <div>
+  //       ORDERS <br><br>
+  //       {{ presentOrders(orders) }}
+  //     </div>
+  //   `,
+  //   props: {
+  //     currentPrice: {
+  //       type: Number
+  //     }
+  //   },
+  //   data() {
+  //     return {
+  //       orders: {},
+  //       timer: ''
+  //     }
+  //   },
+  //   methods: {
+  //     getData() {
+  //       $.get("/orders")
+  //       .then(response => (this.refreshData(response)))
+  //     },
+  //     refreshData(orders) {
+  //       this.orders = this.trimOrders(orders, this.props.currentPrice)
+  //     },
+  //     n(n, d) {
+  //       return Number.parseFloat(n).toFixed(d);
+  //     },
+  //     trimOrders(orders, currentPrice) {
+  //       let returnObject = {
+  //         orders: []
+  //       }
+  //       let totalCurrentDollar = 0
+  //       let totalProjectedDollar = 0
+  //       orders.forEach(order => {
+  //         returnObject.orders.push({
+  //           'side': order.side,
+  //           'time': order.timestamp,
+  //           'volume': order.amount,
+  //           'price': order.price,
+  //           'currentDollar': n((order.amount * currentPrice), 2),
+  //           'projectedDollar': n((order.amount * order.price), 2)
+  //         })
+  //         totalCurrentDollar += (order.amount * currentPrice)
+  //         totalProjectedDollar += (order.amount * order.price)
+  //       })
+  //       returnObject['totals'] = {
+  //         'totalCurrentDollar': totalCurrentDollar,
+  //         'totalProjectedDollar': totalProjectedDollar
+  //       }
+  //       return returnObject
+  //     },
+  //     presentOrders(ordersObject) {
+  //       let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
+  //       ordersObject.orders.forEach(order => {
+  //         returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}        ${order.price}      ${order.currentDollar}      ${order.projectedDollar}\n\n`)
+  //       })                                 
+  //       returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
+  //       returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
         
-        return returnString
-      }
-    },
-    created() {
-      this.timer = setInterval(this.getData(), 2000)
-    },
-  })
+  //       return returnString
+  //     }
+  //   },
+    // created() {
+    //   this.timer = setInterval(this.getData(), 2000)
+    // },
+  // })
+
+  // 
+  //       
+  //       
+  //       
+  //      
+
 
   Vue.component ('market', {
     template: `
       <div>
         MARKET <br><br>
-        Symbol : {{ tick.symbol }} <br>
+        Symbol : {{ currentPriceObject.symbol }} <br>
         Last Price : {{ lastPrice }} <br>
-        Current Price : {{ this.n(currentPrice, 5) }} <br>
-        {{ comparePrices(lastPrice, currentPrice) }} <br>
-        SMA  Open, 100 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
-        SMA  Open, 200 : {{ this.n(this.sma(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
-        EMA  Open, 100 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 100, 'open'), 5) }} <br>
-        EMA  Open, 200 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 200, 'open'), 5) }} <br>
-        EMA  High, 200 : {{ this.n(this.ema(this.trim(this.tick.priceHistory), 200, 'high'), 5) }} <br>
-        ATR, 100 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 100), 5) }} <br>
-        ATR, 200 : {{ this.n(this.atr(this.trim(this.tick.priceHistory), 200), 5) }}
+        Current Price : {{ this.n(currentPriceObject.price, 5) }} <br>
+        {{ comparePrices(lastPrice, currentPriceObject.price) }} <br>
+        SMA  Open, 100 : {{ this.n(this.sma(this.trim(priceHistory), 100, 'open'), 5) }} <br>
+        SMA  Open, 200 : {{ this.n(this.sma(this.trim(priceHistory), 200, 'open'), 5) }} <br>
+        EMA  Open, 100 : {{ this.n(this.ema(this.trim(priceHistory), 100, 'open'), 5) }} <br>
+        EMA  Open, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'open'), 5) }} <br>
+        EMA  High, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'high'), 5) }} <br>
+        ATR, 100 : {{ this.n(this.atr(this.trim(priceHistory), 100), 5) }} <br>
+        ATR, 200 : {{ this.n(this.atr(this.trim(priceHistory), 200), 5) }}
       </div>
     `,
     props: {
-      currentPrice: {
-        type: Number
-      },
-      tick: {
+      currentPriceObject: {
         type: Object
+      },
+      priceHistory: {
+        type: Array
       }
     },
     data() {
@@ -231,8 +238,8 @@ $(document).ready(function() {
     template: `
       <div id="app">
         <wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-        <orders :currentPrice="data.currentPrice" />
-        <market :tick="data.tick" />
+
+        <market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" />
       </div>
     `,
     data() {
@@ -252,7 +259,7 @@ $(document).ready(function() {
       },
       parseData(data) {
         this.data = data
-        console.log(data.currentPriceObject)
+        console.log(data.priceHistoryArray)
       }
     }
   })
