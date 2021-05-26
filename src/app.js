@@ -54,17 +54,6 @@ $(document).ready(function() {
       n(n, d) {
         return Number.parseFloat(n).toFixed(d);
       },
-      
-      presentOrders(ordersObject) {
-        let returnString = `Side Time Volume Price Current $ Projected $\n`
-        ordersObject.orders.forEach(order => {
-          returnString = returnString.concat(`${order.side} ${order.time} ${order.volume} ${order.price} ${order.currentDollar} ${order.projectedDollar}\n\n`)
-        })
-        returnString = returnString.concat(this.n(ordersObject.totals.totalCurrentDollar, 2))
-        returnString = returnString.concat(this.n(ordersObject.totals.totalProjectedDollar, 2))
-        
-        return returnString
-      }
     }
   })
 
@@ -76,11 +65,8 @@ $(document).ready(function() {
         Last Price : {{ n(lastPrice, 5) }} <br>
         Current Price : {{ this.n(currentPriceObject.price, 5) }} <br>
         {{ comparePrices(lastPrice, currentPriceObject.price) }} <br>
-        SMA  Open, 100 : {{ this.n(this.sma(this.trim(priceHistory), 100, 'open'), 5) }} <br>
-        SMA  Open, 200 : {{ this.n(this.sma(this.trim(priceHistory), 200, 'open'), 5) }} <br>
-        EMA  Open, 100 : {{ this.n(this.ema(this.trim(priceHistory), 100, 'open'), 5) }} <br>
-        EMA  Open, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'open'), 5) }} <br>
-        EMA  High, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'high'), 5) }} <br>
+        EMA  Close, 100 : {{ this.n(this.ema(this.trim(priceHistory), 100, 'close'), 5) }} <br>
+        EMA  Close, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'close'), 5) }} <br>
         ATR, 100 : {{ this.n(this.atr(this.trim(priceHistory), 100), 5) }} <br>
         ATR, 200 : {{ this.n(this.atr(this.trim(priceHistory), 200), 5) }}
       </div>
@@ -183,7 +169,7 @@ $(document).ready(function() {
           emaData.push(newPoint)
         }
         let currentEma = [...emaData].pop()
-        return +currentEma.toFixed(2)
+        return +currentEma
       }
     }
   })
@@ -228,12 +214,12 @@ $(document).ready(function() {
         let totalProjectedDollar = 0
         orders.forEach(order => {
           returnObject.orders.push({
-            'side': order.side,
-            'time': order.timestamp,
-            'volume': order.amount,
-            'price': order.price,
-            'currentDollar': this.n((order.amount * currentPrice), 2),
-            'projectedDollar': this.n((order.amount * order.price), 2)
+            'Side': order.side,
+            'Time': order.timestamp,
+            'Volume': order.amount,
+            '@ Price': order.price,
+            '= Current BUSD': this.n((order.amount * currentPrice), 2),
+            '= Projected BUSD': this.n((order.amount * order.price), 2)
           })
           totalCurrentDollar += (order.amount * currentPrice)
           totalProjectedDollar += (order.amount * order.price)
