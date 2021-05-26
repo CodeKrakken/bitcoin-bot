@@ -250,14 +250,14 @@ $(document).ready(function() {
       }
     },
     created() {
-      this.timer = setInterval(this.getData(), 2000)
+      this.timer = setInterval(this.newTick, 2000)
     },
     methods: {
-      getData() {
-        $.get("/data")
-        .then(response => (this.parseData(response)))
+      newTick () {
+        $.get("/tick")
+        .then(response => (this.refreshData(response)))
       },
-      parseData(data) {
+      refreshData(data) {
         this.data = data
         console.log(data.priceHistoryArray)
       }

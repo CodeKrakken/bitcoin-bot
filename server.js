@@ -29,20 +29,20 @@ app.listen(port, () => {
     console.log(`listening on ${port}`);
 });
 
-app.get('/tick', async(req, res) => {
-  try {
-    const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
-    const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
-    res.send({
-      symbol: currentPrice.data.symbol,
-      currentPrice: currentPrice.data.price,
-      priceHistory: priceHistory.data
-    })
+// app.get('/tick', async(req, res) => {
+//   try {
+//     const currentPrice = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
+//     const priceHistory = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
+//     res.send({
+//       symbol: currentPrice.data.symbol,
+//       currentPrice: currentPrice.data.price,
+//       priceHistory: priceHistory.data
+//     })
 
-  } catch (err) {
-    console.error(err.message)
-  }
-})
+//   } catch (err) {
+//     console.error(err.message)
+//   }
+// })
 
 app.get('/wallet', async(req, res) => {
   try {
@@ -77,7 +77,7 @@ app.get('/currentPrice', async(req, res) => {
   }
 })
 
-app.get('/data', async(req, res) => {
+app.get('/tick', async(req, res) => {
   try {
     console.log('getting data')
     const dataObject = {}
