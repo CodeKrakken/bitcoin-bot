@@ -35,10 +35,11 @@ $(document).ready(function() {
     template: `
       <div>
         ORDERS <br><br>
-        <div v-for="value in values">
-          {{ key }} : {{ value }}
-        </div> 
-        {{ orders }}
+        <span v-for="order in orders.orders">
+          <span v-for="(value, key) in order">
+            {{ key }} : {{ value }} <br>
+          </span>
+        </span> 
       </div>
     `,
     props: {

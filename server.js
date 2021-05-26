@@ -48,7 +48,6 @@ app.get('/tick', async(req, res) => {
     const priceHistoryRaw = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1h`)
     const balancesRaw = await binanceClient.fetchBalance()
     const ordersRaw = await binanceClient.fetchOpenOrders(market);
-    console.log(ordersRaw)
     dataObject.currentPriceObject = currentPriceRaw.data
     dataObject.priceHistoryArray = priceHistoryRaw.data
     wallet[config.asset] = balancesRaw.free[config.asset]
