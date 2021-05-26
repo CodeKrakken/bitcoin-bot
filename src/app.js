@@ -35,7 +35,10 @@ $(document).ready(function() {
     template: `
       <div>
         ORDERS <br><br>
-        {{ trimOrders(orders, currentPrice) }}
+        <div v-for="value in values">
+          {{ key }} : {{ value }}
+        </div> 
+        {{ orders }}
       </div>
     `,
     props: {
@@ -50,37 +53,14 @@ $(document).ready(function() {
       n(n, d) {
         return Number.parseFloat(n).toFixed(d);
       },
-      trimOrders(orders, currentPrice) {
-        let returnObject = {
-          orders: []
-        }
-        let totalCurrentDollar = 0
-        let totalProjectedDollar = 0
-        orders.forEach(order => {
-          returnObject.orders.push({
-            'side': order.side,
-            'time': order.timestamp,
-            'volume': order.amount,
-            'price': order.price,
-            'currentDollar': this.n((order.amount * currentPrice), 2),
-            'projectedDollar': this.n((order.amount * order.price), 2)
-          })
-          totalCurrentDollar += (order.amount * currentPrice)
-          totalProjectedDollar += (order.amount * order.price)
-        })
-        returnObject['totals'] = {
-          'totalCurrentDollar': totalCurrentDollar,
-          'totalProjectedDollar': totalProjectedDollar
-        }
-        return returnObject
-      },
+      
       presentOrders(ordersObject) {
-        let returnString = `Side     Time              Volume       Price        Current $   Projected $\n`
+        let returnString = `Side Time Volume Price Current $ Projected $\n`
         ordersObject.orders.forEach(order => {
-          returnString = returnString.concat(`${order.side}     ${order.time}     ${order.volume}        ${order.price}      ${order.currentDollar}      ${order.projectedDollar}\n\n`)
-        })                                 
-        returnString = returnString.concat('                                                     ' + n(ordersObject.totals.totalCurrentDollar, 2) + '      ')
-        returnString = returnString.concat(n(ordersObject.totals.totalProjectedDollar, 2))
+          returnString = returnString.concat(`${order.side} ${order.time} ${order.volume} ${order.price} ${order.currentDollar} ${order.projectedDollar}\n\n`)
+        })
+        returnString = returnString.concat(this.n(ordersObject.totals.totalCurrentDollar, 2))
+        returnString = returnString.concat(this.n(ordersObject.totals.totalProjectedDollar, 2))
         
         return returnString
       }
@@ -212,7 +192,7 @@ $(document).ready(function() {
     template: `
       <div id="app">
         <wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-        <orders :orders="data.orders" :currentPrice="data.currentPriceObject.price" />
+        <orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
         <market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
       </div>
     `,
@@ -238,6 +218,33 @@ $(document).ready(function() {
         }
         this.data = data
         this.firstRun = false
+      },
+      trimOrders(orders, currentPrice) {
+        let returnObject = {
+          orders: []
+        }
+        let totalCurrentDollar = 0
+        let totalProjectedDollar = 0
+        orders.forEach(order => {
+          returnObject.orders.push({
+            'side': order.side,
+            'time': order.timestamp,
+            'volume': order.amount,
+            'price': order.price,
+            'currentDollar': this.n((order.amount * currentPrice), 2),
+            'projectedDollar': this.n((order.amount * order.price), 2)
+          })
+          totalCurrentDollar += (order.amount * currentPrice)
+          totalProjectedDollar += (order.amount * order.price)
+        })
+        returnObject['totals'] = {
+          'totalCurrentDollar': totalCurrentDollar,
+          'totalProjectedDollar': totalProjectedDollar
+        }
+        return returnObject
+      },
+      n(n, d) {
+        return Number.parseFloat(n).toFixed(d);
       }
     }
   })
