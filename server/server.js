@@ -2,42 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const morgan = require('morgan');
-const path = require('path');
-const app = express()
+const app = express();
+const port = 8000;
 const axios = require('axios')
-const ccxt = require('ccxt');
-const binanceClient = new ccxt.binance({
-  apiKey: process.env.API_KEY,
-  secret: process.env.API_SECRET
-});
 const config = {
   base: 'BUSD',
   asset: 'DOGE'
 }
 const market = `${config.asset}/${config.base}`
 const symbol = `${config.asset}${config.base}`
-
-app.use(morgan('tiny'));
-app.use(cors());
-app.use(express.static(__dirname));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-    console.log(`listening on ${port}`);
+const ccxt = require('ccxt');
+const binanceClient = new ccxt.binance({
+  apiKey: process.env.API_KEY,
+  secret: process.env.API_SECRET
 });
+app.use(bodyParser.json());
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/orders', async(req, res) => {
-  try {
-    const orders = await client.fetchOpenOrders(market);
-    console.log(orders)
-    res.send(orders)
-  } catch (err) {
-    console.log(err.message)
-  }
-})
+
 
 app.get('/tick', async(req, res) => {
   try {
@@ -59,3 +42,5 @@ app.get('/tick', async(req, res) => {
     console.log(error.message)
   }
 })
+
+app.listen(port);
