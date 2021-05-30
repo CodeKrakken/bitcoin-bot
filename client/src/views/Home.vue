@@ -1,5 +1,8 @@
 <template>
 <div id="app">
+  <div id="time">
+    {{ data.currentTime }}
+  </div>
   <div id="grid">
     <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
     <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
@@ -13,7 +16,7 @@
 import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
-import EventService from '@/services/EventService.js'
+import TickService from '@/services/TickService.js'
 
 export default {
   name: 'home',
@@ -35,7 +38,7 @@ export default {
   },
   methods: {
     async getTick () {
-      EventService.getTick()
+      TickService.getTick()
       .then(response => this.refreshData(response))
     },
     refreshData(data) {
@@ -102,6 +105,12 @@ export default {
   bottom: 10vh;
   left: 10vh;
   right: 10vh
+}
+
+#time {
+  position: absolute;
+  top: 0;
+  left: 0
 }
 
 </style>

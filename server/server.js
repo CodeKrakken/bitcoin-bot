@@ -20,11 +20,10 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-
-
 app.get('/tick', async(req, res) => {
   try {
-    console.log('getting data')
+    const currentTime = new Date(Date.now()).toLocaleString()
+    console.log(`Tick @ ${currentTime}`)
     const dataObject = {}
     const wallet = {}
     const currentPriceRaw = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
@@ -37,6 +36,7 @@ app.get('/tick', async(req, res) => {
     wallet[config.base] = balancesRaw.free[config.base]
     dataObject.wallet = wallet
     dataObject.orders = ordersRaw
+    dataObject.currentTime = currentTime
     res.send(dataObject)
   } catch (error) {
     console.log(error.message)

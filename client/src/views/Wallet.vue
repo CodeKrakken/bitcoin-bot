@@ -6,6 +6,7 @@
   = {{ n((Object.values(wallet)[0] * currentPrice) + Object.values(wallet)[1], 2) }} {{ Object.keys(wallet)[1] }} <br>
 </div>
 </template>
+
 <script>
 export default {
   props: {
@@ -23,4 +24,3 @@ export default {
   }, 
 }
 </script>
-<style></style>

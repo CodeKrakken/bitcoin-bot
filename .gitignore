@@ -1,7 +1,6 @@
 .DS_Store
 node_modules
 /dist
-auth_config.json
 .env
 
 # local env files
@@ -22,6 +21,5 @@ yarn-error.log*
 *.sln
 *.sw?
 
-client/auth_config.json
 client/node_modules
 server/node_modules
