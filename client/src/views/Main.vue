@@ -5,19 +5,21 @@
   </div>
   <div id="grid">
     <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-    <Chart :data="data.priceHistoryArray.data.edit()" />
-    <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
+    <trading-vue :data="data.priceHistory"></trading-vue>
+    <!-- <Chart :data="data.priceHistory" /> -->
     <Orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
+    <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistory" :lastPrice="lastPrice" />
   </div>
 </div>
 </template>
 
 <script>
 
+import TradingVue from 'trading-vue-js'
 import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
-import Chart from '@/views/Chart.vue'
+// import Chart from '@/views/Chart.vue'
 import TickService from '@/services/TickService.js'
 
 export default {
@@ -27,7 +29,7 @@ export default {
       timer: '',
       data: {},
       lastPrice: 0,
-      firstRun: true      
+      firstRun: true    
     }
   },
   created() {
@@ -35,9 +37,10 @@ export default {
   },
   components: {
     Wallet,
-    Chart,
+    // Chart,
     Orders,
-    Market
+    Market,
+    TradingVue
   },
   methods: {
     async getTick () {
@@ -51,6 +54,7 @@ export default {
       this.$set(this, "data", data);
       this.data.currentPriceObject.price = parseFloat(this.data.currentPriceObject.price)
       this.firstRun = false
+      console.log(data.priceHistory)
     },
     trimOrders(orders, currentPrice) {
       let returnObject = {
@@ -78,13 +82,6 @@ export default {
     },
     n(n, d) {
       return Number.parseFloat(n).toFixed(d);
-    },
-    edit(dataArray) {
-      let returnArray
-      dataArray.forEach(tick => {
-        returnArray.push(tick.slice(0, 6))
-      })
-      return returnArray
     }
   }
 }

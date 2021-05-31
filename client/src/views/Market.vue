@@ -5,10 +5,10 @@
   Last Price : {{ n(lastPrice, 5) }} <br>
   Current Price : {{ this.n(currentPriceObject.price, 5) }} <br>
   {{ comparePrices(lastPrice, currentPriceObject.price) }} <br>
-  EMA  Close, 100 : {{ this.n(this.ema(this.trim(priceHistory), 100, 'close'), 5) }} <br>
-  EMA  Close, 200 : {{ this.n(this.ema(this.trim(priceHistory), 200, 'close'), 5) }} <br>
-  ATR, 100 : {{ this.n(this.atr(this.trim(priceHistory), 100), 5) }} <br>
-  ATR, 200 : {{ this.n(this.atr(this.trim(priceHistory), 200), 5) }}
+  EMA  Close, 100 : {{ this.n(this.ema(priceHistory, 100, 'close'), 5) }} <br>
+  EMA  Close, 200 : {{ this.n(this.ema(priceHistory, 200, 'close'), 5) }} <br>
+  ATR, 100 : {{ this.n(this.atr(priceHistory, 100), 5) }} <br>
+  ATR, 200 : {{ this.n(this.atr(priceHistory, 200), 5) }}
 </div>
 </template>
 
@@ -36,31 +36,7 @@ export default {
       }
       const percentage = Math.abs(lastPrice - currentPrice)/lastPrice*100
       return direction + ' ' + this.n(percentage, 5) + '%'
-    },
-    trim(data) {
-      let dataObjectArray = []
-      data.forEach(period => {
-        dataObjectArray.push({
-          'start': period[0],
-          'open': parseFloat(period[1]),
-          'high': parseFloat(period[2]),
-          'low': parseFloat(period[3]),
-          'close': parseFloat(period[4]),
-          'v': period[5],
-          'end': period[6],
-          'qav': period[7],
-          'num_trades': period[8],
-          'taker_base_vol': period[9],
-          'taker_quote_vol': period[10],
-          'ignore': period[11]
-        })
-      })
-      return dataObjectArray
-    },
-    refreshData(newTick) {
-      this.tick = newTick
-    },
-    
+    },    
     n(n, d) {
       return Number.parseFloat(n).toFixed(d);
     },
