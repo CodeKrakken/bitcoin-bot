@@ -5,7 +5,7 @@
   </div>
   <div id="grid">
     <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-    <Chart />
+    <Chart :data="data.priceHistoryArray.data.edit()" />
     <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
     <Orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
   </div>
@@ -78,6 +78,13 @@ export default {
     },
     n(n, d) {
       return Number.parseFloat(n).toFixed(d);
+    },
+    edit(dataArray) {
+      let returnArray
+      dataArray.forEach(tick => {
+        returnArray.push(tick.slice(0, 6))
+      })
+      return returnArray
     }
   }
 }

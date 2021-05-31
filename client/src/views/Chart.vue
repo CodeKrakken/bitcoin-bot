@@ -7,6 +7,11 @@ import TradingVue from 'trading-vue-js'
   export default {
     name: 'chart',
     components: { TradingVue },
+    props: {
+      data: {
+        type: Array
+      }
+    },
     data() {
       return {
         ohlcv: [

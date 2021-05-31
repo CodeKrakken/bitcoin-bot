@@ -32,6 +32,7 @@ app.get('/tick', async(req, res) => {
     const ordersRaw = await binanceClient.fetchOpenOrders(market);
     dataObject.currentPriceObject = currentPriceRaw.data
     dataObject.priceHistoryArray = priceHistoryRaw.data
+    console.log(priceHistoryRaw)
     wallet[config.asset] = balancesRaw.free[config.asset]
     wallet[config.base] = balancesRaw.free[config.base]
     dataObject.wallet = wallet
