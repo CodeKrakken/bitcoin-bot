@@ -5,8 +5,7 @@
   </div>
   <div id="grid">
     <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-    <trading-vue :data="data.priceHistory"></trading-vue>
-    <!-- <Chart :data="data.priceHistory" /> -->
+    <Chart :data="data.priceHistory" />
     <Orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
     <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistory" :lastPrice="lastPrice" />
   </div>
@@ -15,11 +14,10 @@
 
 <script>
 
-import TradingVue from 'trading-vue-js'
 import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
-// import Chart from '@/views/Chart.vue'
+import Chart from '@/views/Chart.vue'
 import TickService from '@/services/TickService.js'
 
 export default {
@@ -37,10 +35,9 @@ export default {
   },
   components: {
     Wallet,
-    // Chart,
+    Chart,
     Orders,
-    Market,
-    TradingVue
+    Market
   },
   methods: {
     async getTick () {

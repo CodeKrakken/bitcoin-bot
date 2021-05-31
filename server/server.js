@@ -28,11 +28,21 @@ app.get('/tick', async(req, res) => {
     const wallet = {}
     const currentPriceRaw = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
     const priceHistoryRaw = await axios.get(`https://api.binance.com/api/v1/klines?symbol=${symbol}&interval=1m`)
+    let priceHistory = []
+    priceHistoryRaw.data.forEach(period => {
+      priceHistory.push({
+        'startTime': period[0],
+        'open': period[1],
+        'high': period[2],
+        'low': period[3],
+        'close': period[4],
+        'endTime': period[5]
+      })
+    })
     const balancesRaw = await binanceClient.fetchBalance()
     const ordersRaw = await binanceClient.fetchOpenOrders(market);
     dataObject.currentPriceObject = currentPriceRaw.data
-    dataObject.priceHistoryArray = priceHistoryRaw.data
-    console.log(priceHistoryRaw)
+    dataObject.priceHistory = priceHistory
     wallet[config.asset] = balancesRaw.free[config.asset]
     wallet[config.base] = balancesRaw.free[config.base]
     dataObject.wallet = wallet
