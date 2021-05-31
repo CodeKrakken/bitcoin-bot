@@ -5,6 +5,7 @@
   </div>
   <div id="grid">
     <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
+    <Chart />
     <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistoryArray" :lastPrice="lastPrice" />
     <Orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
   </div>
@@ -16,6 +17,7 @@
 import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
+import Chart from '@/views/Chart.vue'
 import TickService from '@/services/TickService.js'
 
 export default {
@@ -33,6 +35,7 @@ export default {
   },
   components: {
     Wallet,
+    Chart,
     Orders,
     Market
   },
