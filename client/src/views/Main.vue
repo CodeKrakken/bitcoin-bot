@@ -65,9 +65,9 @@ export default {
   
         x: this.times,
         close: this.closes,
-        decreasing: {line: {color: '#7F7F7F'}}, 
+        decreasing: {line: {color: '#ff0000'}}, 
         high: this.highs,
-        increasing: {line: {color: '#17BECF'}}, 
+        increasing: {line: {color: ' #00ff00'}}, 
         line: {color: 'rgba(31,119,180,1)'}, 
         low: this.lows,
         open: this.opens, 
@@ -170,8 +170,8 @@ export default {
   left: 0
 }
 
-.grid-box {
+/* .grid-box {
   border: thin white dashed
-}
+} */
 
 </style>
