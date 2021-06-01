@@ -54,6 +54,7 @@ export default {
         this.lastPrice = this.tick.currentPriceObject.price
       }
       this.$set(this, "tick", tick);
+      console.log(this.tick.reports)
       this.tick.currentPriceObject.price = parseFloat(this.tick.currentPriceObject.price)
       this.firstRun = false
       this.opens = this.extractData(this.tick.priceHistory, 'open')
@@ -75,7 +76,6 @@ export default {
         xaxis: 'x', 
         yaxis: 'y'
       };
-      console.log(trace1)
       var data = [trace1];
       var layout = {
         dragmode: 'zoom', 
