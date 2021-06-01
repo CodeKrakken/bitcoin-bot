@@ -88,8 +88,7 @@ export default {
         showlegend: false, 
         xaxis: {
           autorange: true, 
-          rangeslider: {range: [this.times[0], this.times[this.times.length-1]]}, 
-          title: 'Date', 
+          rangeslider: {range: [this.times[0], this.times[this.times.length-1]]},  
           type: 'date'
         }, 
         yaxis: {
