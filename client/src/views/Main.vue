@@ -5,6 +5,7 @@
   </div>
   <div id="grid">
     <Wallet class="grid-box" :wallet="tick.wallet" :currentPrice="tick.currentPriceObject.price" />
+    <Reports :reports="tick.reports" />
     <div class="grid-box" id="CandleStick" /> 
     <Orders class="grid-box" :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
     <Market class="grid-box" :currentPriceObject="tick.currentPriceObject" :priceHistory="tick.priceHistory" :lastPrice="lastPrice" />
@@ -19,6 +20,7 @@ import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
 import TickService from '@/services/TickService.js'
 import Plotly from 'plotly.js-dist'
+import Reports from '@/views/Reports.vue'
 
 export default {
   name: 'home',
@@ -43,6 +45,7 @@ export default {
     Wallet,
     Orders,
     Market,
+    Reports
   },
   methods: {
     async getTick () {
@@ -152,7 +155,7 @@ export default {
 
 #grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 2fr;
   grid-template-rows: 1fr 1fr;
   font-size: 100%;
   text-align: center;

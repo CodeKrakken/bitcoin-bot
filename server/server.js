@@ -34,7 +34,7 @@ app.get('/tick', async(req, res) => {
   try {
     const currentTime = Date.now()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
-    reports.push(`Tick @ ${new Date(currentTime).toLocaleString()}`)
+    reports.unshift(`Tick @ ${new Date(currentTime).toLocaleString()}`)
     const dataObject = {}
     const wallet = {}
     const currentPriceRaw = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`)
@@ -61,7 +61,7 @@ app.get('/tick', async(req, res) => {
     dataObject.wallet = wallet
     dataObject.orders = ordersRaw
     dataObject.currentTime = currentTime
-    dataObject.reports = reports
+    dataObject.reports = reports.slice(0, 5)
     res.send(dataObject)
     trade(market, wallet, currentPrice, binanceClient, config, new Date, ordersRaw)
     lastPrice = currentPrice
