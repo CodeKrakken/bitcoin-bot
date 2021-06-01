@@ -7,8 +7,9 @@
     <Wallet class="grid-box" :wallet="tick.wallet" :currentPrice="tick.currentPriceObject.price" />
     <Reports class="grid-box" :reports="tick.reports" />
     <div class="grid-box" id="CandleStick" /> 
-    <Orders class="grid-box" :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
     <Market class="grid-box" :currentPriceObject="tick.currentPriceObject" :priceHistory="tick.priceHistory" :lastPrice="lastPrice" />
+    <div class="grid-box">Placeholder</div>
+    <Orders class="grid-box" :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
   </div>
 </div>
 </template>
