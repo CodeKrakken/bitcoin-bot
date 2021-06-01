@@ -75,6 +75,7 @@ export default {
         xaxis: 'x', 
         yaxis: 'y'
       };
+      console.log(trace1)
       var data = [trace1];
       var layout = {
         dragmode: 'zoom', 

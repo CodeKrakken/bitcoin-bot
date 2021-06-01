@@ -36,7 +36,7 @@ app.get('/tick', async(req, res) => {
         'high': period[2],
         'low': period[3],
         'close': period[4],
-        'endTime': period[5]
+        'endTime': period[6]
       })
     })
     const balancesRaw = await binanceClient.fetchBalance()
