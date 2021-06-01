@@ -82,4 +82,35 @@ async function trade(market, wallet, price, client, config, timeObject, orders) 
   }
 }
 
+async function refreshOrders(client, orders, price, config, market) {
+  let consolidatedSellVolume = 0
+  let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
+  orders.forEach(async order => {
+    if (order.side === 'buy') {
+      await client.cancelOrder(order.id, order.symbol)
+      console.log("Cancelled limit buy order")
+      newBuyOrder(order.symbol, price, client, config)
+    } else if (order.side === 'sell') {
+      await client.cancelOrder(order.id, order.symbol)
+    }
+  })
+  await client.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
+  console.log(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 5)} ${config.asset} @ $${n(consolidatedSellPrice, 5)}`)
+  orders = await client.fetchOpenOrders(market);
+}
+
+async function newBuyOrder(market, price, client, config) {
+  const assetVolume = config.allocation / price
+  await client.createLimitBuyOrder(market, assetVolume, price)
+  console.log(`\nCreated limit buy order for  ${n(assetVolume, 5)} ${config.asset} @ $${n(price)}`)
+}
+
+async function newSellOrder(market, price, client, config) {
+  const assetVolume = config.allocation / price
+  const profitPrice = price * (1 + config.fee*config.margin)
+  await client.createLimitSellOrder(market, assetVolume, profitPrice)
+  askingPrice = price
+  console.log(`Created limit sell order for ${n(assetVolume, 5)} ${config.asset} @ $${n(profitPrice, 5)}`)
+}
+
 app.listen(port);
