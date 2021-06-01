@@ -54,6 +54,7 @@ app.get('/tick', async(req, res) => {
     })
     const balancesRaw = await binanceClient.fetchBalance()
     const ordersRaw = await binanceClient.fetchOpenOrders(market);
+    console.log(ordersRaw)
     dataObject.currentPriceObject = currentPriceRaw.data
     dataObject.priceHistory = priceHistory
     wallet[config.asset] = balancesRaw.free[config.asset]
@@ -97,8 +98,10 @@ async function refreshOrders(client, orders, price, config, market) {
       await client.cancelOrder(order.id, order.symbol)
     }
   })
-  await client.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
-  reports.unshift(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 5)} ${config.asset} @ $${n(consolidatedSellPrice, 5)}`)
+  if (orders.length > 0) {
+    await client.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
+    reports.unshift(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 5)} ${config.asset} @ $${n(consolidatedSellPrice, 5)}`)
+  }
   orders = await client.fetchOpenOrders(market);
 }
 
