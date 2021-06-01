@@ -141,7 +141,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 #app {
   position: absolute;
