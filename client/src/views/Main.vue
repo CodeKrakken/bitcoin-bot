@@ -4,10 +4,10 @@
     {{ tick.currentTime }}
   </div>
   <div id="grid">
-    <Wallet :wallet="tick.wallet" :currentPrice="tick.currentPriceObject.price" />
-    <div id="CandleStick" /> 
-    <Orders :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
-    <Market :currentPriceObject="tick.currentPriceObject" :priceHistory="tick.priceHistory" :lastPrice="lastPrice" />
+    <Wallet class="grid-box" :wallet="tick.wallet" :currentPrice="tick.currentPriceObject.price" />
+    <div class="grid-box" id="CandleStick" /> 
+    <Orders class="grid-box" :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
+    <Market class="grid-box" :currentPriceObject="tick.currentPriceObject" :priceHistory="tick.priceHistory" :lastPrice="lastPrice" />
   </div>
 </div>
 </template>
@@ -147,28 +147,31 @@ export default {
   left: 0;
   right: 0;
   display: flex;
-  align-items: center;
-  justify-content: center
+  align-content: space-between;
+  justify-content: space-between
 }
 
 #grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  column-gap: 1vw;
   font-size: 100%;
   text-align: center;
   position: absolute;
-  top: 10vh;
-  bottom: 10vh;
-  left: 10vh;
-  right: 10vh
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 #time {
   position: absolute;
   top: 0;
   left: 0
+}
+
+.grid-box {
+  border: thin white dashed
 }
 
 </style>
