@@ -6,8 +6,8 @@ const app = express();
 const port = 8000;
 const axios = require('axios')
 const config = {
+  asset: 'BNB',
   base: 'BUSD',
-  asset: 'DOGE',
   allocation: 15,
   tickInterval: 2000,
   buyInterval: 4 * 60 * 1000,
