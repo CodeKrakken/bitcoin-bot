@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "plotly": "^1.0.6",
     "vue": "^2.6.10",
     "vue-router": "^3.1.3"
   },

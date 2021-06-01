@@ -25,7 +25,7 @@ export default {
       timer: '',
       data: {},
       lastPrice: 0,
-      firstRun: true    
+      firstRun: true
     }
   },
   created() {
@@ -34,7 +34,7 @@ export default {
   components: {
     Wallet,
     Orders,
-    Market
+    Market,
   },
   methods: {
     async getTick () {
@@ -48,7 +48,11 @@ export default {
       this.$set(this, "data", data);
       this.data.currentPriceObject.price = parseFloat(this.data.currentPriceObject.price)
       this.firstRun = false
-      console.log(data.priceHistory)
+      this.opens = this.extractData(this.data.priceHistory, 'open')
+      this.closes = this.extractData(this.data.priceHistory, 'close')
+      this.highs = this.extractData(this.data.priceHistory, 'high')
+      this.lows = this.extractData(this.data.priceHistory, 'low')
+      this.time = this.extractData(this.data.priceHistory, 'startTime')
     },
     trimOrders(orders, currentPrice) {
       let returnObject = {
@@ -76,7 +80,14 @@ export default {
     },
     n(n, d) {
       return Number.parseFloat(n).toFixed(d);
-    }
+    },
+    extractData(dataObject, key) {
+      let array = []
+      dataObject.forEach(obj => {
+        array.push(obj[key])
+      })
+      return array
+    },
   }
 }
 </script>
