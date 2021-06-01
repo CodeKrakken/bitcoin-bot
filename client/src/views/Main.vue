@@ -1,12 +1,13 @@
 <template>
 <div id="app">
   <div id="time">
-    {{ data.currentTime }}
+    {{ tick.currentTime }}
   </div>
   <div id="grid">
-    <Wallet :wallet="data.wallet" :currentPrice="data.currentPriceObject.price" />
-    <Orders :orders="trimOrders(data.orders, data.currentPriceObject.price)" :currentPrice="data.currentPriceObject.price" />
-    <Market :currentPriceObject="data.currentPriceObject" :priceHistory="data.priceHistory" :lastPrice="lastPrice" />
+    <Wallet :wallet="tick.wallet" :currentPrice="tick.currentPriceObject.price" />
+    <div id="CandleStick" /> 
+    <Orders :orders="trimOrders(tick.orders, tick.currentPriceObject.price)" :currentPrice="tick.currentPriceObject.price" />
+    <Market :currentPriceObject="tick.currentPriceObject" :priceHistory="tick.priceHistory" :lastPrice="lastPrice" />
   </div>
 </div>
 </template>
@@ -17,15 +18,22 @@ import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
 import TickService from '@/services/TickService.js'
+import Plotly from 'plotly.js-dist'
 
 export default {
   name: 'home',
   data() {
     return {
       timer: '',
-      data: {},
+      tick: {},
       lastPrice: 0,
-      firstRun: true
+      firstRun: true,
+      open: [],
+      close: [],
+      high: [],
+      low: [],
+      times: [],
+      trace1: {}
     }
   },
   created() {
@@ -41,18 +49,55 @@ export default {
       TickService.getTick()
       .then(response => this.refreshData(response))
     },
-    refreshData(data) {
+    refreshData(tick) {
       if (!this.firstRun) {
-        this.lastPrice = this.data.currentPriceObject.price
+        this.lastPrice = this.tick.currentPriceObject.price
       }
-      this.$set(this, "data", data);
-      this.data.currentPriceObject.price = parseFloat(this.data.currentPriceObject.price)
+      this.$set(this, "tick", tick);
+      this.tick.currentPriceObject.price = parseFloat(this.tick.currentPriceObject.price)
       this.firstRun = false
-      this.opens = this.extractData(this.data.priceHistory, 'open')
-      this.closes = this.extractData(this.data.priceHistory, 'close')
-      this.highs = this.extractData(this.data.priceHistory, 'high')
-      this.lows = this.extractData(this.data.priceHistory, 'low')
-      this.time = this.extractData(this.data.priceHistory, 'startTime')
+      this.opens = this.extractData(this.tick.priceHistory, 'open')
+      this.closes = this.extractData(this.tick.priceHistory, 'close')
+      this.highs = this.extractData(this.tick.priceHistory, 'high')
+      this.lows = this.extractData(this.tick.priceHistory, 'low')
+      this.times = this.extractData(this.tick.priceHistory, 'endTime')
+      var trace1 = {
+  
+        x: this.times,
+        close: this.closes,
+        decreasing: {line: {color: '#7F7F7F'}}, 
+        high: this.highs,
+        increasing: {line: {color: '#17BECF'}}, 
+        line: {color: 'rgba(31,119,180,1)'}, 
+        low: this.lows,
+        open: this.opens, 
+        type: 'candlestick', 
+        xaxis: 'x', 
+        yaxis: 'y'
+      };
+      var data = [trace1];
+      var layout = {
+        dragmode: 'zoom', 
+        margin: {
+          r: 10, 
+          t: 25, 
+          b: 40, 
+          l: 60
+        }, 
+        showlegend: false, 
+        xaxis: {
+          autorange: true, 
+          rangeslider: {range: [this.times[0], this.times[this.times.length-1]]}, 
+          title: 'Date', 
+          type: 'date'
+        }, 
+        yaxis: {
+          autorange: true,
+          range: [Math.min(...this.closes)*1.2, Math.max(...this.closes)*1.2],
+          type: 'linear'
+        }
+      };
+      Plotly.plot('CandleStick', data, layout)
     },
     trimOrders(orders, currentPrice) {
       let returnObject = {
