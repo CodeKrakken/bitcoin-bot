@@ -170,8 +170,12 @@ export default {
   left: 0
 }
 
-/* .grid-box {
-  border: thin white dashed
-} */
+.grid-box {
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-content: center;
+  align-items: center
+}
 
 </style>

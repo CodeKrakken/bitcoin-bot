@@ -1,11 +1,13 @@
 <template>
-<div>
-  ORDERS <br><br>
-  <span v-for="order in orders.orders" :key="order.id">
-    <span v-for="(value, key) in order" :key=value.id>
-      {{ key }} : {{ value }} <br>
-    </span>
-  </span> 
+<div id="orders">
+  ORDERS<br><br>
+  <div>
+    <span v-for="order in orders.orders" :key="order.id">
+      <span v-for="(value, key) in order" :key=value.id>
+        {{ key }} : {{ value }} <br>
+      </span>
+    </span> 
+  </div>
 </div>
 </template>
 
@@ -26,3 +28,10 @@ export default {
   }
 }
 </script>
+
+<style>
+#orders {
+  display: flex;
+  flex-direction: column
+}
+</style>
