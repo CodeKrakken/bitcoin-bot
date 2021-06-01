@@ -1,18 +1,16 @@
 <template>
-<div>
-  <div id="grid">
-    <span>1</span>
-    <span>2</span>
-    <span>3</span>
-    <span>4</span>
-    <span>5</span>
-    <span>6</span>
-    <span>7</span>
-    <span>8</span>
-    <span>9</span>
-    <span>10</span>
-    <span>11</span>
-    <span>12</span>
+<div id="orders">
+  <div class="grid">
+    <div v-for="key in Object.keys(orders.orders[0])" :key="key.id">
+      <div class="grid-box">{{ key }}</div>
+    </div>
+  </div><br />
+  <div>
+    <div class="grid" v-for="order in orders.orders" :key="order.id">
+      <div v-for="value in Object.values(order)" :key="value.id">
+        <div class="grid-box">{{ value }}</div>
+      </div>
+    </div>
   </div>
 </div>
 </template>
@@ -37,13 +35,19 @@ export default {
 
 <style scoped>
 
-#grid {
+#orders {
+  display: flex;
+  flex-direction: column
+}
+
+.grid-box {border: 1px solid black;}
+
+.grid {
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  grid-template-columns: 6(1fr);
-  grid-gap: 2px;
-  width: 50%;
-  height: 50%
+  grid-template-columns: 1fr 1fr 1fr 1fr 2fr 2fr;
+  grid-column-gap: 2px;
+  grid-row-gap: 2px;
+  width: 100%
 }
 
 </style>
