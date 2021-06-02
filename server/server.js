@@ -113,9 +113,12 @@ async function refreshOrders(client, orders, price, config, market) {
 
 async function newBuyOrder(market, price, client, config) {
   try { 
+    price = parseFloat(price)
     const assetVolume = config.allocation / price
     console.log(`Creating limit buy order for ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
-    await client.createLimitBuyOrder(market, n(assetVolume, 4), price)
+    console.log(typeof assetVolume)
+    console.log(typeof price)
+    await client.createLimitBuyOrder(market, n(assetVolume, 4), n(price, 5))
     buyCountdown = 120
     reports.push(`\nCreated limit buy order for  ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
   } catch(error) {
@@ -128,8 +131,7 @@ async function newSellOrder(market, price, client, config) {
   const assetVolume = config.allocation / price
   const profitPrice = price * (1 + config.fee*config.margin)
   console.log(`Creating limit sell order for ${n(assetVolume, 4)} ${config.asset} @ $${n(profitPrice, 5)}`)
-  await client.createLimitSellOrder(market, n(assetVolume, 4), profitPrice)
-  askingPrice = price
+  await client.createLimitSellOrder(market, n(assetVolume, 4), n(profitPrice, 5))
   reports.push(`Created limit sell order for ${n(assetVolume, 4)} ${config.asset} @ $${n(profitPrice, 5)}`)
 }
 

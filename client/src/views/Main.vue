@@ -20,7 +20,7 @@ import Wallet from '@/views/Wallet.vue'
 import Orders from '@/views/Orders.vue'
 import Market from '@/views/Market.vue'
 import TickService from '@/services/TickService.js'
-// import Plotly from 'plotly.js-dist'
+import Plotly from 'plotly.js-dist'
 import Reports from '@/views/Reports.vue'
 
 export default {
@@ -31,15 +31,19 @@ export default {
       tick: {},
       lastPrice: 0,
       firstRun: true,
-      open: [],
-      close: [],
-      high: [],
-      low: [],
+      opens: [],
+      closes: [],
+      highs: [],
+      lows: [],
       times: [],
-      trace1: {}
+      trace1: {},
+      data: [],
+      layout: {}
     }
   },
   created() {
+    this.getTick()
+    this.plotChart()
     this.timer = setInterval(this.getTick, 2000)
   },
   components: {
@@ -53,54 +57,56 @@ export default {
       TickService.getTick()
       .then(response => this.refreshData(response))
     },
-    refreshData(tick) {
-      if (!this.firstRun) {
-        this.lastPrice = this.tick.currentPriceObject.price
-      }
-      this.$set(this, "tick", tick);
-      this.tick.currentPriceObject.price = parseFloat(this.tick.currentPriceObject.price)
-      this.firstRun = false
+    plotChart() {
       this.opens = this.extractData(this.tick.priceHistory, 'open')
       this.closes = this.extractData(this.tick.priceHistory, 'close')
       this.highs = this.extractData(this.tick.priceHistory, 'high')
       this.lows = this.extractData(this.tick.priceHistory, 'low')
       this.times = this.extractData(this.tick.priceHistory, 'endTime')
-      // var trace1 = {
-  
-      //   x: this.times,
-      //   close: this.closes,
-      //   decreasing: {line: {color: '#ff0000'}}, 
-      //   high: this.highs,
-      //   increasing: {line: {color: ' #00ff00'}}, 
-      //   line: {color: 'rgba(31,119,180,1)'}, 
-      //   low: this.lows,
-      //   open: this.opens, 
-      //   type: 'candlestick', 
-      //   xaxis: 'x', 
-      //   yaxis: 'y'
-      // };
-    //   var data = [trace1];
-    //   var layout = {
-    //     dragmode: 'zoom', 
-    //     margin: {
-    //       r: 10, 
-    //       t: 25, 
-    //       b: 40, 
-    //       l: 60
-    //     }, 
-    //     showlegend: false, 
-    //     xaxis: {
-    //       autorange: true, 
-    //       rangeslider: {range: [this.times[0], this.times[this.times.length-1]]},  
-    //       type: 'date'
-    //     }, 
-    //     yaxis: {
-    //       autorange: true,
-    //       range: [Math.min(...this.closes)*1.2, Math.max(...this.closes)*1.2],
-    //       type: 'linear'
-    //     }
-    //   };
-    //   Plotly.plot('CandleStick', data, layout)
+      var trace1 = {
+        x: this.times,
+        close: this.closes,
+        decreasing: {line: {color: '#ff0000'}}, 
+        high: this.highs,
+        increasing: {line: {color: ' #00ff00'}}, 
+        line: {color: 'rgba(31,119,180,1)'}, 
+        low: this.lows,
+        open: this.opens, 
+        type: 'candlestick', 
+        xaxis: 'x', 
+        yaxis: 'y'
+      };
+      this.data = [trace1];
+      this.layout = {
+        dragmode: 'zoom', 
+        margin: {
+          r: 10, 
+          t: 25, 
+          b: 40, 
+          l: 60
+        }, 
+        showlegend: false, 
+        xaxis: {
+          autorange: true, 
+          rangeslider: {range: [this.times[0], this.times[this.times.length-1]]},  
+          type: 'date'
+        }, 
+        yaxis: {
+          autorange: true,
+          range: [Math.min(...this.closes)*1.2, Math.max(...this.closes)*1.2],
+          type: 'linear'
+        }
+      };
+      Plotly.plot('CandleStick', this.data, this.layout)
+    },
+    refreshData(tick) {
+      if (!this.firstRun) {
+        this.lastPrice = this.tick.currentPriceObject.price
+      }
+      this.$set(this, "tick", tick);
+      console.log(this.tick.priceHistory)
+      this.tick.currentPriceObject.price = parseFloat(this.tick.currentPriceObject.price)
+      this.firstRun = false
     },
     trimOrders(orders, currentPrice) {
       let returnObject = {
