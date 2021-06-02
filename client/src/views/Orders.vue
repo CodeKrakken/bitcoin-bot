@@ -1,5 +1,6 @@
 <template>
 <div id="orders">
+  ORDERS<br><br>
   <div class="grid">
     <div v-for="key in Object.keys(orders.orders[0])" :key="key.id">
       <div class="grid-box">{{ key }}</div>
