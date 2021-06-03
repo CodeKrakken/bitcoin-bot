@@ -16,7 +16,6 @@ const config = {
 };
 let lastPrice = 0;
 let rising;
-let lastBuyTime = 0;
 let reports = []
 let buyCountdown = 0
 
@@ -25,7 +24,8 @@ const symbol = `${config.asset}${config.base}`
 const ccxt = require('ccxt');
 const binanceClient = new ccxt.binance({
   apiKey: process.env.API_KEY,
-  secret: process.env.API_SECRET
+  secret: process.env.API_SECRET,
+  // 'enableRateLimit': true,
 });
 app.use(bodyParser.json());
 app.use(cors());
@@ -33,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/tick', async(req, res) => {
   try {
+    const exchange = await axios.get('https://api.binance.com/api/v3/exchangeInfo')
     if (buyCountdown > 0) { buyCountdown -= 1 }
     const currentTime = Date.now()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
@@ -75,8 +76,8 @@ app.get('/tick', async(req, res) => {
 
 async function trade(market, wallet, price, client, config, timeObject, orders) {
   let timeNow = timeObject.getTime()
+  refreshOrders(client, orders, price, config, market)
   if (rising && wallet[config.base] >= config.allocation && wallet[config.asset] >= config.allocation / price && buyCountdown <= 0) {
-    refreshOrders(client, orders, price, config, market)
     await newBuyOrder(market, price, client, config)
     timeObject = new Date
     lastBuyTime = timeObject.getTime()
@@ -103,8 +104,9 @@ async function refreshOrders(client, orders, price, config, market) {
     }
   })
   if (orders.length > 0) {
+    console.log(`Consolidating open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
     await client.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
-    reports.push(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 5)} ${config.asset} @ $${n(consolidatedSellPrice, 5)}`)
+    reports.push(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
   } else {
     buyCountdown = 0
   }
@@ -115,10 +117,10 @@ async function newBuyOrder(market, price, client, config) {
   try { 
     price = parseFloat(price)
     const assetVolume = config.allocation / price
-    console.log(`Creating limit buy order for ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
-    await client.createLimitBuyOrder(market, n(assetVolume, 4), n(price, 5))
+    console.log(`Creating limit buy order for ${n(assetVolume, 8)} ${config.asset} @ $${n(price, 8)}`)
+    await client.createLimitBuyOrder(market, n(assetVolume, 8), n(price, 8))
     buyCountdown = 120
-    reports.push(`\nCreated limit buy order for  ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
+    reports.push(`\nCreated limit buy order for  ${n(assetVolume, 8)} ${config.asset} @ $${n(price, 8)}`)
   } catch(error) {
     console.log(error.message)
   }
@@ -128,9 +130,9 @@ async function newBuyOrder(market, price, client, config) {
 async function newSellOrder(market, price, client, config) {
   const assetVolume = config.allocation / price
   const profitPrice = price * (1 + config.fee*config.margin)
-  console.log(`Creating limit sell order for ${n(assetVolume, 4)} ${config.asset} @ $${n(profitPrice, 5)}`)
-  await client.createLimitSellOrder(market, n(assetVolume, 4), n(profitPrice, 5))
-  reports.push(`Created limit sell order for ${n(assetVolume, 4)} ${config.asset} @ $${n(profitPrice, 5)}`)
+  console.log(`Creating limit sell order for ${n(assetVolume, 8)} ${config.asset} @ $${n(profitPrice, 8)}`)
+  await client.createLimitSellOrder(market, n(assetVolume, 8), n(profitPrice, 8))
+  reports.push(`Created limit sell order for ${n(assetVolume, 8)} ${config.asset} @ $${n(profitPrice, 8)}`)
 }
 
 function n(n, d) {
