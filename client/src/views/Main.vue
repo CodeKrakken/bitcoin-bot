@@ -37,7 +37,8 @@ export default {
       times: [],
       trace1: {},
       data: [],
-      layout: {}
+      layout: {},
+      chartIsPlotted: false
     }
   },
   created() {
@@ -99,8 +100,11 @@ export default {
     refreshData(tick) {
       if (this.tick.currentPriceObject !== undefined) {
         this.lastPrice = this.tick.currentPriceObject.price
-        this.plotChart()
         this.tick.currentPriceObject.price = parseFloat(this.tick.currentPriceObject.price)
+      }
+      if (!this.chartIsPlotted) {
+        this.plotChart()
+        this.chartIsPlotted = true
       }
       this.$set(this, "tick", tick);
     },

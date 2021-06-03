@@ -116,8 +116,6 @@ async function newBuyOrder(market, price, client, config) {
     price = parseFloat(price)
     const assetVolume = config.allocation / price
     console.log(`Creating limit buy order for ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
-    console.log(typeof assetVolume)
-    console.log(typeof price)
     await client.createLimitBuyOrder(market, n(assetVolume, 4), n(price, 5))
     buyCountdown = 120
     reports.push(`\nCreated limit buy order for  ${n(assetVolume, 4)} ${config.asset} @ $${n(price, 5)}`)
