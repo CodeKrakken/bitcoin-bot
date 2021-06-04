@@ -25,7 +25,8 @@ let currentPriceRaw
 let currentPrice
 let priceHistory = []
 let balancesRaw
-let orders
+let orders = []
+let oldOrders = []
 let market = `${config.asset}/${config.base}`
 const timeObject = new Date
 const symbol = `${config.asset}${config.base}`
@@ -42,9 +43,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/tick', async(req, res) => {
   try {
+    await saveValues()
     await fetchInfo()
     await updateInfo()
-    await refreshOrders()
+    await parseOrders()
+    // await refreshOrders()
     await trade()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
     res.send(dataObject)
@@ -52,6 +55,21 @@ app.get('/tick', async(req, res) => {
     console.log(error.message)
   }
 })
+
+function saveValues() {
+  lastPrice = currentPrice
+  oldOrders = orders
+}
+
+function parseOrders(key, value, array) {
+  let count = 0
+  orders.forEach(order => {
+    if (order[key] === value) {
+      count ++
+    }
+  })
+  return count
+}
 
 // Trading functions
 
@@ -63,9 +81,11 @@ async function fetchInfo() {
 }
 
 function updateInfo() {
+  if (parseOrders('side', 'sell', oldOrders) > parseOrders('side', 'sell', orders)) {
+    buyCountdown = 0
+  }
   if (buyCountdown > 0) { buyCountdown -= 1 }
   currentTime = Date.now()
-  lastPrice = currentPrice
   currentPrice = currentPriceRaw.data.price
   rising = currentPrice > lastPrice
   priceHistoryRaw.data.forEach(period => {
@@ -89,6 +109,7 @@ function updateInfo() {
 }
 
 async function refreshOrders() {
+
   // let consolidatedSellVolume = 0
   // let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
   // orders.forEach(async order => {
