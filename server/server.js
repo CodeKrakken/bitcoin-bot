@@ -43,7 +43,7 @@ app.get('/tick', async(req, res) => {
   try {
     await fetchInfo()
     updateInfo()
-    refreshOrders()
+    // refreshOrders()
     trade()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
     res.send(dataObject)
