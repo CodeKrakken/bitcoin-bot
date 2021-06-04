@@ -12,7 +12,7 @@ const config = {
   tickInterval: 2000,
   buyInterval: 4 * 60 * 1000,
   fee: 0.002,
-  margin: 2
+  margin: 1.1
 };
 let lastPrice = 0;
 let rising;
@@ -84,10 +84,10 @@ function updateInfo() {
   if (parseOrders('side', 'sell', oldOrders) > parseOrders('side', 'sell', orders)) {
     buyCountdown = 0
   }
+  if (orders.length === 0) { buyCountdown = 0 }
   if (buyCountdown > 0) { buyCountdown -= 1 }
   currentTime = Date.now()
   currentPrice = currentPriceRaw.data.price
-  rising = currentPrice > lastPrice
   priceHistoryRaw.data.forEach(period => {
     priceHistory.push({
       'startTime': period[0],
@@ -98,6 +98,7 @@ function updateInfo() {
       'endTime': period[6]
     })
   })
+  rising = ema(priceHistory, 1, 'close') > ema(priceHistory, 2, 'close')
   dataObject.currentPriceObject = currentPriceRaw.data
   dataObject.priceHistory = priceHistory
   wallet[config.asset] = balancesRaw.free[config.asset]
@@ -175,6 +176,27 @@ async function newSellOrder() {
 
 function n(n, d) {
   return Number.parseFloat(n).toFixed(d);
+}
+
+function ema(rawData, time, parameter) {
+  let data = extractData(rawData, parameter)
+  const k = 2/(time + 1)
+  let emaData = []
+  emaData[0] = data[0]
+  for (let i = 1; i < data.length; i++) {
+    let newPoint = (data[i] * k) + (emaData[i-1] * (1-k))
+    emaData.push(newPoint)
+  }
+  let currentEma = [...emaData].pop()
+  return +currentEma
+}
+
+function extractData(dataObject, key) {
+  let array = []
+  dataObject.forEach(obj => {
+    array.push(obj[key])
+  })
+  return array
 }
 
 

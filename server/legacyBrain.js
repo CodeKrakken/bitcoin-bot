@@ -9,7 +9,7 @@ function run() {
 
   const config = {
     asset: "DOGE",
-    base: "BUSD",
+    base: "USDT",
     allocation: 15,
     tickInterval: 2000,
     buyInterval: 4 * 60 * 1000,
