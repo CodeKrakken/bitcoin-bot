@@ -12,7 +12,7 @@ const config = {
   tickInterval: 2000,
   buyInterval: 4 * 60 * 1000,
   fee: 0.002,
-  margin: 1.1
+  margin: 1.00001
 };
 let lastPrice = 0;
 let rising;
