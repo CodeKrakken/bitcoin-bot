@@ -27,6 +27,7 @@ let priceHistory = []
 let balancesRaw
 let orders
 let market = `${config.asset}/${config.base}`
+const timeObject = new Date
 const symbol = `${config.asset}${config.base}`
 const ccxt = require('ccxt');
 const binanceClient = new ccxt.binance({
@@ -42,9 +43,9 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/tick', async(req, res) => {
   try {
     await fetchInfo()
-    updateInfo()
-    // refreshOrders()
-    trade()
+    await updateInfo()
+    await refreshOrders()
+    await trade()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
     res.send(dataObject)
   } catch (error) {
@@ -88,41 +89,46 @@ function updateInfo() {
 }
 
 async function refreshOrders() {
-  let consolidatedSellVolume = 0
-  let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
-  orders.forEach(async order => {
-    if (order.side === 'buy') {
-      await binanceClient.cancelOrder(order.id, order.symbol)
-      reports.push("Cancelled limit buy order")
-      buyCountdown = 0
-    } else if (order.side === 'sell') {
-      await binanceClient.cancelOrder(order.id, order.symbol)
-      consolidatedSellVolume += order.amount
-    }
-  })
-  if (orders.length > 0) {
-    console.log(`Consolidating open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
-    await binanceClient.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
-    reports.push(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
-  } else {
-    buyCountdown = 0
-  }
-  orders = await binanceClient.fetchOpenOrders(market);
+  // let consolidatedSellVolume = 0
+  // let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
+  // orders.forEach(async order => {
+  //   if (order.side === 'buy') {
+  //     await binanceClient.cancelOrder(order.id, order.symbol)
+  //     reports.push("Cancelled limit buy order")
+  //     buyCountdown = 0
+  //   } else if (order.side === 'sell') {
+  //     await binanceClient.cancelOrder(order.id, order.symbol)
+  //     consolidatedSellVolume += order.amount
+  //   }
+  // })
+  // if (orders.length > 0) {
+  //   console.log(`Consolidating open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
+  //   await binanceClient.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
+  //   reports.push(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
+  // } else {
+  //   buyCountdown = 0
+  // }
+  // orders = await binanceClient.fetchOpenOrders(market);
 }
 
 async function trade() {
-  if (rising && wallet[config.base] >= config.allocation && wallet[config.asset] >= config.allocation / currentPrice && buyCountdown <= 0) {
+  if (timeToBuy()) {
     await newBuyOrder()
-    timeObject = new Date
-    lastBuyTime = timeObject.getTime()
     newSellOrder()
   } else if (buyCountdown > 0) { 
     console.log(`Ticks til buy: ${buyCountdown}`) 
-  } else {
-    if (rising === false) { console.log('Not rising') }
+  } else if (rising === false) { console.log('Not rising') }
+  else {
     if (wallet[config.base] < config.allocation) { console.log(`Insufficient base balance: ${wallet[config.base]}`) }
     if (wallet[config.asset] < config.allocation / currentPrice) { console.log('Insufficient asset balance') }
   }
+}
+
+function timeToBuy() {
+  return (rising 
+    && wallet[config.base] >= config.allocation 
+    && wallet[config.asset] >= config.allocation / currentPrice 
+    && buyCountdown <= 0)
 }
 
 async function newBuyOrder() {
@@ -136,7 +142,6 @@ async function newBuyOrder() {
   } catch(error) {
     console.log(error.message)
   }
-
 }
 
 async function newSellOrder() {
