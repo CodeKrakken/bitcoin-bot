@@ -42,6 +42,7 @@ export default {
     }
   },
   created() {
+    // this.getTick
     this.timer = setInterval(this.getTick, 2000)
   },
   components: {
