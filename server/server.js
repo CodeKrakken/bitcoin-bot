@@ -10,7 +10,7 @@ const config = {
   base: 'BUSD',
   allocation: 15,
   tickInterval: 2000,
-  buyInterval: 4 * 60 * 1000,
+  buyInterval: 1 * 10 * 1000,
   fee: 0.002,
   margin: 1.00001
 };
@@ -159,7 +159,7 @@ async function newBuyOrder() {
     const assetVolume = config.allocation / currentPrice
     console.log(`Creating limit buy order for ${n(assetVolume, 8)} ${config.asset} @ $${n(currentPrice, 8)}`)
     await binanceClient.createLimitBuyOrder(market, n(assetVolume, 8), n(currentPrice, 8))
-    buyCountdown = 120
+    buyCountdown = 10
     reports.push(`\nCreated limit buy order for  ${n(assetVolume, 8)} ${config.asset} @ $${n(currentPrice, 8)}`)
   } catch(error) {
     console.log(error.message)
