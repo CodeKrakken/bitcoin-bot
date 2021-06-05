@@ -3,19 +3,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 const axios = require('axios')
 const config = {
   asset: 'BNB',
   base: 'BUSD',
   allocation: 15,
-  tickInterval: 2000,
+  tickInterval: 1 * 2000,
   buyInterval: 1 * 10 * 1000,
   fee: 0.002,
   margin: 1.00001
 };
-let lastPrice = 0;
-let rising;
 let reports = []
 let buyCountdown = 0
 let currentTime = 0
@@ -41,7 +39,12 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/tick', async(req, res) => {
+
+// For headless use
+let timer = setInterval(getTick, config.tickInterval)
+
+// app.get('/tick', async(req, res) => {
+async function getTick() {
   try {
     await saveValues()
     await fetchInfo()
@@ -50,14 +53,14 @@ app.get('/tick', async(req, res) => {
     // await refreshOrders()
     await trade()
     console.log(`Tick @ ${new Date(currentTime).toLocaleString()}`)
-    res.send(dataObject)
+    // res.send(dataObject)
   } catch (error) {
     console.log(error.message)
   }
-})
+}
+// })
 
 function saveValues() {
-  lastPrice = currentPrice
   oldOrders = orders
 }
 
@@ -98,7 +101,6 @@ function updateInfo() {
       'endTime': period[6]
     })
   })
-  rising = ema(priceHistory, 1, 'close') > ema(priceHistory, 2, 'close')
   dataObject.currentPriceObject = currentPriceRaw.data
   dataObject.priceHistory = priceHistory
   wallet[config.asset] = balancesRaw.free[config.asset]
@@ -109,28 +111,14 @@ function updateInfo() {
   dataObject.reports = reports.slice(reports.length-5, 5)
 }
 
-async function refreshOrders() {
-
-  // let consolidatedSellVolume = 0
-  // let consolidatedSellPrice = Math.max.apply(Math, orders.map(function(order) { return order.price; }))
-  // orders.forEach(async order => {
-  //   if (order.side === 'buy') {
-  //     await binanceClient.cancelOrder(order.id, order.symbol)
-  //     reports.push("Cancelled limit buy order")
-  //     buyCountdown = 0
-  //   } else if (order.side === 'sell') {
-  //     await binanceClient.cancelOrder(order.id, order.symbol)
-  //     consolidatedSellVolume += order.amount
-  //   }
-  // })
-  // if (orders.length > 0) {
-  //   console.log(`Consolidating open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
-  //   await binanceClient.createLimitSellOrder(market, consolidatedSellVolume, consolidatedSellPrice)
-  //   reports.push(`Consolidated open sell orders: selling ${n(consolidatedSellVolume, 8)} ${config.asset} @ $${n(consolidatedSellPrice, 8)}`)
-  // } else {
-  //   buyCountdown = 0
-  // }
-  // orders = await binanceClient.fetchOpenOrders(market);
+function rising() {
+  // let diff1 = ema(priceHistory, 1, 'close') - ema(priceHistory, 1, 'open')
+  // console.log(`${ema(priceHistory, 1, 'close')} - ${ema(priceHistory, 1, 'open')} = ${diff1}`)
+  // let diff2 = ema(priceHistory, 2, 'close') - ema(priceHistory, 2, 'open')
+  // let diff3 = ema(priceHistory, 3, 'close') - ema(priceHistory, 3, 'open')
+  // return diff1 > 0 && diff1 > diff2 && diff2 < diff3
+  return ema(priceHistory, 1, 'close') > ema(priceHistory, 1, 'open')
+      && ema(priceHistory, 1, 'close') > ema(priceHistory, 2, 'close')
 }
 
 async function trade() {
@@ -139,7 +127,7 @@ async function trade() {
     newSellOrder()
   } else if (buyCountdown > 0) { 
     console.log(`Ticks til buy: ${buyCountdown}`) 
-  } else if (rising === false) { console.log('Not rising') }
+  } else if (rising() === false) { console.log('Not rising') }
   else {
     if (wallet[config.base] < config.allocation) { console.log(`Insufficient base balance: ${wallet[config.base]}`) }
     if (wallet[config.asset] < config.allocation / currentPrice) { console.log('Insufficient asset balance') }
@@ -147,7 +135,7 @@ async function trade() {
 }
 
 function timeToBuy() {
-  return (rising 
+  return (rising()
     && wallet[config.base] >= config.allocation 
     && wallet[config.asset] >= config.allocation / currentPrice 
     && buyCountdown <= 0)
